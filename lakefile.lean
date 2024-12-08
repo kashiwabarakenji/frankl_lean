@@ -3,6 +3,10 @@ open Lake DSL
 
 package «frankl_lean» where
   -- add package configuration options here
+    moreLinkArgs := #[
+    "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+    "-lctranslate2"
+  ]
 
 lean_lib «FranklLean» where
   -- add library configuration options here
