@@ -37,3 +37,33 @@ by
   -- 次に、s = t から Finset.erase s x = Finset.erase t x を導きます。
   · intro h
     rw [h]
+
+lemma ground_nonempty_after_minor {α : Type} [DecidableEq α] (ground : Finset α) (x : α) (hx: x ∈ ground) (ground_ge_two: ground.card ≥ 2) : (ground.erase x).Nonempty :=
+  by
+    rw [Finset.erase_eq]
+    apply Finset.nonempty_of_ne_empty
+    by_contra h_empty
+    by_cases hA : ground = ∅
+    rw [hA] at ground_ge_two
+    contradiction
+    -- ground.card = 1のケース
+    have g_eq_x: ground = {x} := by
+      ext y
+      constructor
+      intro _
+      have hy' : y ∈ ground \ {x} := by
+          rw [h_empty]
+          simp_all only [Finset.sdiff_eq_empty_iff_subset, Finset.subset_singleton_iff, false_or,Finset.card_singleton]--
+          simp_all only [ge_iff_le, Nat.reduceLeDiff]
+      rw [h_empty] at hy'
+      contradiction
+      -- y ∈ {x}のときに、groundに属することを示す
+      intro hy
+      have x_eq_y : x = y := by
+        rw [Finset.mem_singleton] at hy
+        rw [hy]
+      rw [x_eq_y] at hx
+      exact hx
+    rw [g_eq_x] at ground_ge_two
+    rw [Finset.card_singleton] at ground_ge_two
+    contradiction
