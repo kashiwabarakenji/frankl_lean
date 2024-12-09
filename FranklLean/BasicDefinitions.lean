@@ -31,6 +31,15 @@ noncomputable def SetFamily.degree (F : SetFamily α): α → Int := λ v => Int
 noncomputable def SetFamily.number_of_hyperedges (F : SetFamily α) : Int :=
   Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s = true ) (F.ground.powerset)))
 
+noncomputable def SetFamily.total_size_of_hyperedges (F : SetFamily α)  [DecidablePred F.sets] : Int :=
+   Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)
+
+noncomputable def SetFamily.normalized_degree {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets] (x: α): ℤ :=
+  2 * (F.degree x:Int) - (number_of_hyperedges F:Int)
+
+noncomputable def SetFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets]: ℤ :=
+  2 * (F.total_size_of_hyperedges:Int) - (number_of_hyperedges F:Int)*(F.ground.card)
+
 /-
 noncomputable instance (α : Type) [DecidableEq α] [Fintype α] : Family (SetFamily α) α where
   degree F v := Int.ofNat  (Finset.card (Finset.filter (λ s => F.sets s = true ∧ v ∈ s) (F.ground.powerset)))
@@ -47,6 +56,9 @@ noncomputable def IdealFamily.degree (F : IdealFamily α): α → Int := λ v =>
 
 noncomputable def IdealFamily.number_of_hyperedges (F : IdealFamily α) : Int :=
   Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s = true ) (F.ground.powerset)))
+
+noncomputable def IdealFamily.total_size_of_hyperedges (F : SetFamily α)  [DecidablePred F.sets] : Int :=
+ Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)
 
 /-
 -- IdealFamilyでもFamilyインスタンスを定義
