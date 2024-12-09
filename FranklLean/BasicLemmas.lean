@@ -3,6 +3,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Init.Data.Nat.Lemmas
+import Mathlib.Algebra.BigOperators.Group.Finset
 --import Mathlib.Data.Bool.Basic
 --import Mathlib.Tactic
 import LeanCopilot
@@ -67,3 +68,59 @@ lemma ground_nonempty_after_minor {α : Type} [DecidableEq α] (ground : Finset 
     rw [g_eq_x] at ground_ge_two
     rw [Finset.card_singleton] at ground_ge_two
     contradiction
+
+omit [DecidableEq α] in
+lemma decarte (A : Finset α) (B : Finset (Finset α)) (a : α) (b : Finset α)
+  (ha : a ∈ A) (hb : b ∈ B) : (a, b) ∈ A.product B := by
+  -- Based on the definition of `Finset.product`, if `a ∈ A` and `b ∈ B`, then `(a, b) ∈ A.product B`.
+  apply Finset.mem_product.2 ⟨ha, hb⟩
+
+omit [DecidableEq α] in
+lemma decarter {α:Type}{a:α}{b:Finset α} (A : Finset α) (B : Finset (Finset α)) (h:(a, b) ∈ A.product B)
+  : a ∈ A ∧ b ∈ B := by
+  -- By the definition of `Finset.product`, if `(a, b)` belongs to `A.product B`,
+  -- then `a ∈ A` and `b ∈ B`.
+  exact Finset.mem_product.1 h
+
+lemma sum_nonneg_of_nonneg {α : Type} [DecidableEq α] (s : Finset α) (f : α → ℤ) (h : ∀ x ∈ s, 0 ≤ f x) :
+  0 ≤ s.sum f := by
+  apply Finset.sum_induction
+  · intro a b ha hb
+    omega
+  · simp_all only [le_refl]
+  intro x a
+  simp_all only
+
+lemma sum_posi_of_posi {α : Type} [DecidableEq α] (s : Finset α) (f : α → ℤ) (nonempty: s ≠ ∅) (h : ∀ x ∈ s, 0 < f x) :
+  0 < s.sum f := by
+  obtain ⟨a, ha⟩ := Finset.nonempty_of_ne_empty nonempty
+  -- Since s is nonempty, we have `a ∈ s`.
+  have h_pos : 0 < f a := h a ha
+  rw [Finset.sum_eq_add_sum_diff_singleton ha]
+  apply add_pos_of_pos_of_nonneg
+  · exact h_pos
+  · apply sum_nonneg_of_nonneg
+    intros x hx
+    simp_all only [ne_eq, Finset.mem_sdiff, Finset.mem_singleton]
+    obtain ⟨left, _⟩ := hx
+    exact (h x left).le
+
+lemma sum_nonpos_exists_nonpos {α : Type} [DecidableEq α] (s : Finset α)(nonempty: s ≠ ∅) (f : α → ℤ) (h : s.sum f ≤ 0) :
+  ∃ x ∈ s, f x ≤ 0 := by
+  by_contra h1
+  -- By contradiction, assume that for all x in s, f x > 0.
+  push_neg at h1
+
+  have h_pos : 0 < s.sum f := by
+    let sn := sum_posi_of_posi s (λ x => f x) nonempty (by simp_all [h1])
+    apply lt_of_le_of_ne
+    apply le_trans
+    on_goal 2 => exact sn
+    simp_all only [zero_add, Int.reduceLE]
+    simp_all only [ne_eq]
+    apply Aesop.BuiltinRules.not_intro
+    intro a
+    simp_all only [le_refl]
+    simp [a] at sn
+  simp_all only [ne_eq]
+  exact not_le_of_lt h_pos h
