@@ -1,11 +1,12 @@
 import FranklLean.BasicDefinitions
 import FranklLean.BasicLemmas
+import LeanCopilot
 
 namespace Frankl
 
 variable {α : Type} [DecidableEq α] [Fintype α]
 
-def deletion {α : Type} [DecidableEq α] [Fintype α](F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
+def SetFamily.deletion {α : Type} [DecidableEq α] [Fintype α](F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
   { ground := F.ground.erase x,
 
     -- In the deletion operation, sets are those that belong to the original family but do not contain x.
@@ -22,11 +23,11 @@ def deletion {α : Type} [DecidableEq α] [Fintype α](F : SetFamily α) (x : α
         exact Finset.subset_erase.2 ⟨hs', right⟩
   }
 
-infixl:65 " ∖ " => deletion
+--infixl:65 " ∖ " => SetFamily.deletion
 
 -- Proving that the deletion operation on an IdealFamily produces another IdealFamily.
 -- The definition includes the proof inline.
-def idealdeletion {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
+def IdealFamily.deletion {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
 {
     ground := F.ground.erase x,
 
@@ -97,7 +98,7 @@ def idealdeletion {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α)
     nonempty_ground := ground_nonempty_after_minor F.ground x hx ground_ge_two,
 }
 
-def contraction (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
+def SetFamily.contraction (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
   { ground := F.ground.erase x,
 
     -- For sets s in the contracted family, s corresponds to a set H in the original family that contained x,
@@ -123,9 +124,9 @@ def contraction (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two
   }
 
 -- Proving that if we contract an IdealFamily, we still get an IdealFamily.
-instance contraction_ideal_family (F : IdealFamily α) (x : α) (hx : F.sets {x} ) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
+instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} ) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
 {
-  contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two with
+  SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two with
 
   has_empty := by
     -- We must show that the empty set is in the contracted family.
@@ -147,7 +148,7 @@ instance contraction_ideal_family (F : IdealFamily α) (x : α) (hx : F.sets {x}
     rfl
 
   down_closed := by
-    let thisF := contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two
+    let thisF := SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two
     have thisg : thisF.ground = F.ground.erase x := by rfl
     have thisinc: thisF.ground ⊆ F.ground := by
       rw [thisg]
@@ -225,7 +226,7 @@ instance contraction_ideal_family (F : IdealFamily α) (x : α) (hx : F.sets {x}
       -- Goal: B = thisF.ground
       have nthisF: x ∉ thisF.ground := by
         dsimp [thisF]
-        dsimp [contraction]
+        dsimp [SetFamily.contraction]
         rw [Finset.erase_eq]
         simp
       have hB_eq2: B = thisF.ground := by
@@ -267,13 +268,13 @@ instance contraction_ideal_family (F : IdealFamily α) (x : α) (hx : F.sets {x}
 
     have thisF_setsA: thisF.sets A := by
       dsimp [thisF]
-      unfold contraction
+      unfold SetFamily.contraction
       unfold SetFamily.sets
 
       have thisFset: (s : Finset α) → thisF.sets s ↔ ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x := by
         unfold SetFamily.sets
         dsimp [thisF]
-        rw [contraction]
+        rw [SetFamily.contraction]
         simp
 
       have existsH: ∃ H, F.sets H ∧ x ∈ H ∧ A = H.erase x := by
@@ -292,22 +293,23 @@ instance contraction_ideal_family (F : IdealFamily α) (x : α) (hx : F.sets {x}
 }
 
 lemma ground_deletion  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (idealdeletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
+  (IdealFamily.deletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
 
   by
-    rw [idealdeletion]
+    rw [IdealFamily.deletion]
     rw [Finset.card_erase_of_mem hx]
 
 lemma ground_contraction  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (contraction F.toSetFamily x hx ground_ge_two).ground.card = F.ground.card - 1 :=
+  (SetFamily.contraction F.toSetFamily x hx ground_ge_two).ground.card = F.ground.card - 1 :=
   by
-    rw [contraction]
+    rw [SetFamily.contraction]
     rw [Finset.card_erase_of_mem hx]
 
 lemma ground_contraction_family  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
-  (contraction_ideal_family F x singleton_have ground_ge_two).ground.card = F.ground.card - 1 :=
+  (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = F.ground.card - 1 :=
   by
-    rw [contraction_ideal_family]
+    rw [IdealFamily.contraction]
     rw [ground_contraction]
+
 
 end Frankl

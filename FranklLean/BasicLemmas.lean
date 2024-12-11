@@ -4,8 +4,6 @@ import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Algebra.BigOperators.Group.Finset
---import Mathlib.Data.Bool.Basic
---import Mathlib.Tactic
 import LeanCopilot
 
 variable {α : Type} [DecidableEq α]

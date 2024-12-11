@@ -9,15 +9,7 @@ namespace Frankl
 
 variable {α : Type} [DecidableEq α]
 
--- A predicate to check if a SetFamily is an IdealFamily
-def isIdealFamily (α : Type) [DecidableEq α] [Fintype α] (F: SetFamily α) : Prop :=
-  (F.sets ∅) ∧                -- The empty set is included
-  (F.sets F.ground) ∧         -- The ground set is included
-  (∀ A B : Finset α, F.sets B → B ≠ F.ground → A ⊆ B → F.sets A)  -- Downward closure
 
--- A predicate to check if an IdealFamily is intersection-closed.
-def isIntersectionClosedFamily {α: Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) : Prop :=
-  ∀ {s t : Finset α}, F.sets s → F.sets t → F.sets (s ∩ t)
 
 -- A theorem stating that every IdealFamily is intersection-closed.
 theorem idealFamily_is_intersectionClosed {α : Type} [DecidableEq α] [Fintype α] (family : IdealFamily α) :

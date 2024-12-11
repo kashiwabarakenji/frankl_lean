@@ -66,6 +66,16 @@ noncomputable def IdealFamily.normalized_degree {α : Type} [DecidableEq α] [Fi
 noncomputable def IdealFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) [DecidablePred F.sets]: ℤ :=
   2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card)
 
+-- A predicate to check if a SetFamily is an IdealFamily
+def isIdealFamily (α : Type) [DecidableEq α] [Fintype α] (F: SetFamily α) : Prop :=
+  (F.sets ∅) ∧                -- The empty set is included
+  (F.sets F.ground) ∧         -- The ground set is included
+  (∀ A B : Finset α, F.sets B → B ≠ F.ground → A ⊆ B → F.sets A)  -- Downward closure
+
+-- A predicate to check if an IdealFamily is intersection-closed.
+def isIntersectionClosedFamily {α: Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) : Prop :=
+  ∀ {s t : Finset α}, F.sets s → F.sets t → F.sets (s ∩ t)
+
 /-
 -- IdealFamilyでもFamilyインスタンスを定義
 noncomputable instance (α : Type) [DecidableEq α] [Fintype α] : Family (IdealFamily α) α where
