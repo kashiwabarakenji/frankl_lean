@@ -674,7 +674,7 @@ lemma transform_inequality {n : Int} (h : 2 ≤ n) :
   simp_all only [Int.pred_toNat, Nat.cast_pow, Nat.cast_ofNat, Nat.cast_add, Nat.cast_one, X]
 
 lemma degree_one_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_hyperedge_none: ¬F.sets {v})(h_uv_have : (F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
+  --(ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by
   have total := ground_minus_v_ideal_total F v v_in_ground h_uv_have singleton_hyperedge_none geq2
