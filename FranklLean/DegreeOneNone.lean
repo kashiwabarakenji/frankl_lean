@@ -7,6 +7,7 @@ import FranklLean.FranklMinors
 import FranklLean.BasicDefinitions
 import FranklLean.BasicLemmas
 import FranklLean.FamilyLemma
+import FranklLean.DegreeOneHave
 import LeanCopilot
 
 namespace Frankl
@@ -166,7 +167,7 @@ lemma total_eq_lem (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
 
     simp_all only [ge_iff_le, Nat.reduceLeDiff]
 
-lemma induction_assum_lem (n : Nat) (F: IdealFamily α) [DecidablePred F.sets] (idealDelF: IdealFamily α) [DecidablePred idealDelF.sets](v : α) (v_in_ground : v ∈ F.ground)  (n_ge_one: n >= 1) (ground_ge_two : F.ground.card ≥ 2) (ground_card: F.ground.card = n + 1)
+lemma induction_assum_lem (n : Nat) (F: IdealFamily α) [DecidablePred F.sets] (idealDelF: IdealFamily α) [DecidablePred idealDelF.sets](v : α) (v_in_ground : v ∈ F.ground)  (ground_ge_two : F.ground.card ≥ 2) (ground_card: F.ground.card = n + 1)
   (h_ind: idealDelF.total_size_of_hyperedges * 2 ≤ idealDelF.number_of_hyperedges * idealDelF.ground.card):
   idealDelF = IdealFamily.deletion F v v_in_ground ground_ge_two → ((idealDelF.total_size_of_hyperedges: Int) + 1) * 2 ≤ (idealDelF.number_of_hyperedges: Int) * (F.ground.card: Int)
      := by
@@ -197,3 +198,57 @@ lemma induction_assum_lem (n : Nat) (F: IdealFamily α) [DecidablePred F.sets] (
       exact setfamily_hyperedges_geq2 idealDelF
 
     linarith
+
+lemma pq_transform (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)(degone: F.degree v = 1):-- (singleton_none : ¬ (F.sets {v})) :
+  ∀ s ∈ F.ground.powerset, F.sets s ↔ (F.sets s ∧ v ∉ s) ∨ s = F.ground :=
+by
+  intro s a
+  apply Iff.intro
+  intro a_1
+  let hyp := hyperedges_not_through_v F.toSetFamily v v_in_ground degone (by exact F.has_ground) s a_1
+  tauto
+
+  intro a_2
+  simp_all only [ge_iff_le, Finset.mem_powerset]
+  cases a_2 with
+  | inl h => simp_all only
+  | inr h_1 =>
+    subst h_1
+    simp_all only [subset_refl]
+    exact F.has_ground
+
+
+
+-- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
+lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : (F.sets (F.ground \ {v})))
+  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
+  : F.normalized_degree_sum ≤ 0 :=
+by
+  have degone: F.degree v = 1 := by
+    exact degree_one_if_not_hyperedge F v_in_ground singleton_none
+
+  have pq_lem := pq_transform F v v_in_ground geq2 degone
+
+  simp [IdealFamily.normalized_degree_sum]
+  let IdealDel := IdealFamily.deletion F v v_in_ground geq2
+  --haveI : DecidablePred IdealDel.sets :=
+  --  by apply_instance
+  have h_ground: IdealDel.ground = F.ground \ {v} := by
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    rw [Finset.erase_eq]
+  have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
+    rw [h_ground]
+    rw [Finset.card_sdiff]
+    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
+    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
+  haveI : DecidablePred IdealDel.sets :=
+  by
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    intro s
+    infer_instance
+
+  let ihnds := ih IdealDel h_ground_card
+  dsimp [IdealFamily.normalized_degree_sum] at ihnds
+  let result :=

@@ -5,11 +5,12 @@ import Init.Data.Nat.Lemmas
 import FranklLean.FranklMinors
 import FranklLean.BasicDefinitions
 import FranklLean.BasicLemmas
+import FranklLean.DegreeOneHave
 import LeanCopilot
 
 namespace Frankl
 
-variable {α : Type} [DecidableEq α][Fintype α]
+variable {α : Type} [DecidableEq α] [Fintype α]
 
 -- For the base case when the ground set size is one
 lemma nonpositive_nds_one (F : IdealFamily α)[DecidablePred F.sets] (h : F.ground.card = 1) : F.normalized_degree_sum ≤ 0 :=
@@ -47,7 +48,6 @@ by
   have h''' : F.number_of_hyperedges = 2:= by
     dsimp [IdealFamily.number_of_hyperedges]
     rw [h'']
-    simp
     rw [Finset.filter_true_of_mem]
     congr
     intro x a
@@ -67,18 +67,16 @@ by
     simp_all only [Finset.card_singleton, Finset.mem_singleton, Nat.cast_one, mul_one, sub_self]
   simp_all only [Finset.card_singleton, Finset.mem_singleton, le_refl]
 
-
+/-
 -- Lemma for the degree-one case
 lemma degree_one_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (geq2: F.ground.card ≥ 2)(h_uv_have : (F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by
   sorry
+-/
 
--- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
-lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (geq2: F.ground.card ≥ 2)(h_uv_not : (F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
-  : F.normalized_degree_sum ≤ 0 := sorry
+
 
 -- Lemma stating that contraction of F at v forms an ideal family
 --lemma isIdealFamily_cont (F : IdealFamily α)[DecidablePred F.sets](v : α)(geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) : isIdealFamily (F.contraction v hassingleton geq2):= sorry
@@ -96,47 +94,69 @@ lemma nonpositive_nds_haveUV
 -- Case: U\{v} is not a hyperedge scenario
 lemma nonpositive_nds_nothaveUV
   (F : IdealFamily α) [DecidablePred F.sets](v : α)(geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) (h_uv_not : (F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum  ≤ 0)
-  : F.normalized_degree_sum  ≤ 0 := sorry
+  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum  ≤ 0)
+  : F.normalized_degree_sum  ≤ 0 :=  sorry
 
 -- Main theorem skeleton
 theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
   F.normalized_degree_sum ≤ 0 := by
   -- Induction on the size of the ground set
-  induction F.ground.card with
-  | Nat.zero =>
+  cases h:F.ground.card with
+  | zero =>
     -- This case should not occur since the family is over a nonempty ground set.
     -- If needed, handle or assert nonempty_ground ensures card ≥ 1.
     -- For completeness, we can put a sorry or a contradiction here.
     exfalso
-    exact F.nonempty_ground
-  | Nat.one =>
+    have hh := F.nonempty_ground
+    have h_empty : F.ground = ∅ := by
+      simp_all only [Finset.card_eq_zero, Finset.not_nonempty_empty]
+    simp_all only [Finset.card_empty, Finset.not_nonempty_empty]
+/-
+  | succ Nat.zero =>
+  --succ _root_.Nat.zero =>
     -- Base case: size of the ground set is one
-    exact nonpositive_nds_one F rfl
-  | Nat.succ Nat.zero =>
+
+    have h1: F.ground.card = 1 := by
+      simp_all only [Nat.succ_eq_add_one, add_left_eq_self, zero_add]
+
+
+    exact nonpositive_nds_one F h1
+-/
+
+  | succ n =>
     -- Inductive step
-    let v := F.ground.choose F.nonempty_ground
+    if n = 0 then
+      -- Base case: size of the ground set is one
+      have h1: F.ground.card = 1 := by
+        simp_all only [Nat.succ_eq_add_one, add_left_eq_self, zero_add]
+      exact nonpositive_nds_one F h1
+    else
+      -- Inductive step: size of the ground set is greater than one
+    have : ∃ v : α, v ∈ F.ground := by
+      have h_nonempty := F.nonempty_ground
+      exact h_nonempty
+    obtain ⟨v, hv⟩ := this
+
     have geq2: F.ground.card ≥ 2 := by
-      rw [Nat.succ_eq_add_one] at *
-      exact Nat.le_add_left 1 n
+      rw [h]
+      omega
     -- Consider whether {v} is a hyperedge
+    have ih := (∀ (F':IdealFamily α) [DecidablePred F'.sets] , F'.ground.card = n → F'.normalized_degree_sum ≤ 0)
     by_cases h_v : F.sets {v}
     case pos =>
       -- Now consider whether (F.ground \ {v}) is a hyperedge
       by_cases h_uv : F.sets (F.ground \ {v})
       case pos =>
         -- If (U\{v}) is a hyperedge
-        exact nonpositive_nds_haveUV F v geq2 (λ F' hF', ih F' (Nat.lt_of_lt_of_le hF' geq2))
+        exact nonpositive_nds_haveUV F v geq2 h_v h_uv ih
       case neg =>
         -- If (U\{v}) is not a hyperedge
-        exact nonpositive_nds_nothaveUV F v geq2 (λ F' hF', ih F' (Nat.lt_of_lt_of_le hF' geq2))
+        exact nonpositive_nds_nothaveUV F v geq2 h_v h_uv_not ih
       -- If {v} is a hyperedge, we have the degree-one case
     case neg =>
       by_cases h_uv : F.sets (F.ground \ {v})
       case pos =>
         -- If (U\{v}) is a hyperedge
-        exact degree_one_nds_haveUV F v geq2 (λ F' hF', ih F' (Nat.lt_of_lt_of_le hF' geq2))
+        exact degree_one_nothaveUV F v geq2 h_uv ih
       case neg =>
-        exact degree_one_nds_nothaveUV F v geq2 (λ F' hF', ih F' (Nat.lt_of_lt_of_le hF' geq2))
-
-end Frankl
+        exact degree_one_nothaveUV F v geq2 h_uv_not ih
