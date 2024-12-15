@@ -6,6 +6,7 @@ import FranklLean.FranklMinors
 import FranklLean.BasicDefinitions
 import FranklLean.BasicLemmas
 import FranklLean.DegreeOneHave
+import FranklLean.DegreeOneNone
 import LeanCopilot
 
 namespace Frankl
@@ -88,17 +89,17 @@ by
 -- Uses induction hypothesis, and conditions on the contracted and deleted families
 lemma nonpositive_nds_haveUV
   (F : IdealFamily α)[DecidablePred F.sets] (v : α) (geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) (h_uv_have : (F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
+  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1→ F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 := sorry
 
 -- Case: U\{v} is not a hyperedge scenario
 lemma nonpositive_nds_nothaveUV
-  (F : IdealFamily α) [DecidablePred F.sets](v : α)(geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) (h_uv_not : (F.sets (F.ground \ {v})))
+  (F : IdealFamily α) [DecidablePred F.sets](v : α)(geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum  ≤ 0)
   : F.normalized_degree_sum  ≤ 0 :=  sorry
 
 -- Main theorem skeleton
-theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
+theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets] (hn : F.ground.card = n) :
   F.normalized_degree_sum ≤ 0 := by
   -- Induction on the size of the ground set
   cases h:F.ground.card with
@@ -110,6 +111,8 @@ theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
     have hh := F.nonempty_ground
     have h_empty : F.ground = ∅ := by
       simp_all only [Finset.card_eq_zero, Finset.not_nonempty_empty]
+      subst h
+      simpa using hn.symm
     simp_all only [Finset.card_empty, Finset.not_nonempty_empty]
 /-
   | succ Nat.zero =>
@@ -140,8 +143,15 @@ theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
     have geq2: F.ground.card ≥ 2 := by
       rw [h]
       omega
+    have groundn: n = F.ground.card - 1 := by
+      rw [h]
+      omega
     -- Consider whether {v} is a hyperedge
-    have ih := (∀ (F':IdealFamily α) [DecidablePred F'.sets] , F'.ground.card = n → F'.normalized_degree_sum ≤ 0)
+    have ih:  (∀ (F':IdealFamily α) [DecidablePred F'.sets] , F'.ground.card = n → F'.normalized_degree_sum ≤ 0) :=
+    by
+      intro hh
+      exact ideal_average_rarity hh
+    rw [groundn] at ih
     by_cases h_v : F.sets {v}
     case pos =>
       -- Now consider whether (F.ground \ {v}) is a hyperedge
@@ -151,12 +161,14 @@ theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
         exact nonpositive_nds_haveUV F v geq2 h_v h_uv ih
       case neg =>
         -- If (U\{v}) is not a hyperedge
-        exact nonpositive_nds_nothaveUV F v geq2 h_v h_uv_not ih
+        exact nonpositive_nds_nothaveUV F v geq2 h_v h_uv ih
       -- If {v} is a hyperedge, we have the degree-one case
     case neg =>
       by_cases h_uv : F.sets (F.ground \ {v})
       case pos =>
         -- If (U\{v}) is a hyperedge
-        exact degree_one_nothaveUV F v geq2 h_uv ih
+        exact degree_one_haveUV F v hv geq2 h_v h_uv
       case neg =>
-        exact degree_one_nothaveUV F v geq2 h_uv_not ih
+        exact degree_one_nothaveUV F v hv geq2 h_v h_uv ih
+
+end Frankl

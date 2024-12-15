@@ -220,7 +220,7 @@ by
 
 
 -- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
-lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : (F.sets (F.ground \ {v})))
+lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by
@@ -251,4 +251,33 @@ by
 
   let ihnds := ih IdealDel h_ground_card
   dsimp [IdealFamily.normalized_degree_sum] at ihnds
-  let result :=
+  have h_card : F.ground.card = IdealDel.ground.card + 1 := by
+    rw [h_ground_card]
+    rw [Nat.sub_add_cancel]
+    linarith
+  have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2 (by linarith [h_card]) (by linarith [ihnds]) rfl
+  simp
+
+  have number: IdealDel.number_of_hyperedges = F.number_of_hyperedges := by
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    dsimp [IdealFamily.number_of_hyperedges]
+    let result := pq_transform F v v_in_ground geq2 degone
+    #check (Finset.filter_congr result).symm
+    --rw [(Finset.filter_congr result).symm]
+    sorry
+    --これではうまくいかないかも。結局、card_bijが必要なのかもしれない。
+
+  have total: IdealDel.total_size_of_hyperedges = F.total_size_of_hyperedges - 1 := by
+    sorry
+
+  rw [number] at h_ind
+  rw [total] at h_ind
+  have total_geqone: 1 <= F.total_size_of_hyperedges := by
+    exact setfamily_hyperedges_total F
+  have total_geqone_nat: 1 ≤ F.total_size_of_hyperedges.toNat := by
+    exact Int.toNat_le_toNat total_geqone
+  simp at h_ind
+  linarith
+
+end Frankl

@@ -35,3 +35,32 @@ by
     simp_all only [Finset.mem_singleton, not_false_eq_true, Finset.card_insert_of_not_mem, Finset.card_singleton,
       Nat.reduceAdd, ne_eq]
   simp_all only [ge_iff_le, Nat.ofNat_le_cast]
+
+lemma setfamily_hyperedges_total (F : IdealFamily α) [DecidablePred F.sets] :
+  F.total_size_of_hyperedges >= 1 :=
+by
+  dsimp [IdealFamily.total_size_of_hyperedges]
+  have h_mem: {F.ground} ⊆ Finset.filter (λ s => F.sets s) F.ground.powerset := by
+    simp [Finset.subset_iff]
+    exact F.has_ground
+  have h_sum: Finset.sum {F.ground} Finset.card  ≤ Finset.sum (Finset.filter F.sets F.ground.powerset) Finset.card:= by
+    rw [Finset.sum_singleton]
+    exact @Finset.sum_le_sum_of_subset _ _ _ Finset.card _ _ h_mem
+
+  have h_total : Finset.sum ({F.ground}) Finset.card = F.ground.card := by
+    simp_all only [Finset.sum_singleton, Finset.card_singleton]
+  have h_ground: F.ground.card >= 1 := by
+    exact Finset.card_pos.mpr F.nonempty_ground
+  rw [h_total] at h_sum
+  have h_sum' : (Finset.filter F.sets F.ground.powerset).sum Finset.card >= F.ground.card :=
+    by
+      exact h_sum
+  convert ge_trans h_sum' h_ground
+  simp_all only [ge_iff_le, Nat.cast_sum]
+  apply Iff.intro
+  · intro _
+    linarith
+  · intro _
+    linarith
+
+end Frankl
