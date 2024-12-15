@@ -266,10 +266,23 @@ by
     #check (Finset.filter_congr result).symm
     --rw [(Finset.filter_congr result).symm]
     sorry
-    --これではうまくいかないかも。結局、card_bijが必要なのかもしれない。
+    --これではうまくいかないかも。pq_transformのidealDelFの部分をFに変える必要がある。
 
-  have total: IdealDel.total_size_of_hyperedges = F.total_size_of_hyperedges - 1 := by
-    sorry
+  have total:  F.total_size_of_hyperedges = IdealDel.total_size_of_hyperedges + 1 := by
+    rw [h_ground_card] at h_card
+    let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not geq2 h_card
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    dsimp [IdealFamily.total_size_of_hyperedges]
+    have left_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground) F.ground.powerset, x.card = ↑((Finset.filter F.sets F.ground.powerset).sum Finset.card) :=
+    by
+      let tmp:= pq_transform F v v_in_ground geq2 degone
+      rw [Finset.filter_congr tmp]
+
+    have right_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card + 1 = ↑((Finset.filter F.sets (F.ground.erase v).powerset).sum Finset.card) + 1 :=
+    by
+      sorry--pq_transformのidealDelFの部分をFに変える必要がある。
+
 
   rw [number] at h_ind
   rw [total] at h_ind
