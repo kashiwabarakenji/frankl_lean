@@ -122,3 +122,43 @@ lemma sum_nonpos_exists_nonpos {α : Type} [DecidableEq α] (s : Finset α)(none
     simp [a] at sn
   simp_all only [ne_eq]
   exact not_le_of_lt h_pos h
+
+  --DegreeOneNoneで使うもの。
+
+lemma filter_sum_func {α : Type} [DecidableEq α] [Fintype α]
+  {P Q : Finset α → Prop} [DecidablePred P] [DecidablePred Q]
+  (S : Finset (Finset α)) (g: Finset α → Nat) :
+  (∀ (s : Finset α), s ∈ S → ¬ (P s ∧ Q s)) →
+    (Finset.filter (λ s => P s ∨ Q s) S).sum g =
+      (Finset.filter (λ s => P s) S).sum g +
+      (Finset.filter (λ s => Q s) S).sum g :=
+by
+  intro disj
+  let domain := Finset.filter (λ s => P s ∨ Q s) S
+  let rangeP := Finset.filter (λ s => P s) S
+  let rangeQ := Finset.filter (λ s => Q s) S
+
+  -- domain is the union of rangeP and rangeQ. Used below implicitly.
+  have d_union : domain = rangeP ∪ rangeQ := by
+    apply Finset.ext
+    intro x
+    simp only [Finset.mem_filter, Finset.mem_union, or_and_right, and_self]
+    simp_all only [not_and, Finset.mem_filter, domain, rangeP, rangeQ]
+    apply Iff.intro
+    · intro a
+      simp_all only [true_and]
+    · intro a
+      cases a with
+      | inl h => simp_all only [or_false, and_self]
+      | inr h_1 => simp_all only [or_true, and_self]
+
+  -- show the disjointness of rangeP and  rangeQ.
+  have disjoint : Disjoint rangeP rangeQ := by
+    simp only [Finset.disjoint_iff_inter_eq_empty, Finset.mem_filter, Finset.mem_inter]
+    ext x
+    simp
+    intro a
+    simp_all only [not_and, Finset.mem_filter, and_false, not_false_eq_true, domain, rangeP, rangeQ]
+
+  simp_all only [not_and, domain, rangeP, rangeQ]
+  rw [Finset.sum_union disjoint]

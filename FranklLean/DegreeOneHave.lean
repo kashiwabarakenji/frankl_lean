@@ -60,7 +60,7 @@ lemma degree_one_if_not_hyperedge {α : Type} {x : α} [DecidableEq α] [Fintype
         have h1 : F.sets F.ground := F.has_ground
         exact h1
         trivial
-    simp only [eq_iff_iff, iff_true]
+    --simp only [eq_iff_iff, iff_true]
     simp_all only [Finset.card_singleton, relevant_sets]--
     simp_all only [Int.ofNat_eq_coe, Nat.cast_one]
 
@@ -119,7 +119,7 @@ lemma hyperedges_not_through_v {α : Type} [DecidableEq α] [Fintype α]
     exact Finset.card_le_card set2card2
 
   have deg2: F.degree v >= 2 := by
-    dsimp [degree]
+    dsimp [SetFamily.degree]
     simp [set2card3]
     simp_all only [eq_iff_iff, iff_true, Finset.card_singleton, Nat.not_ofNat_le_one, degset]
 
