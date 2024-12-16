@@ -257,16 +257,12 @@ by
     by
       simp_all only [eq_iff_iff, iff_true, with_v,all]
       dsimp [SetFamily.degree]
-      rw [Finset.card_filter]
-      simp_all only [Finset.sum_boole, Nat.cast_id, eq_iff_iff, iff_true, without_v]
+      --rw [Finset.card_filter]
+      --simp_all only [Finset.sum_boole, Nat.cast_id, eq_iff_iff, iff_true, without_v]
 
   have h_card_all : all.card = F.number_of_hyperedges:=
     by
-     dsimp [Family.number_of_hyperedges]
-     dsimp [all]
-     unfold SetFamily.number_of_hyperedges
-     simp_all only [eq_iff_iff, iff_true, with_v, without_v, all]
-     simp_all only [Int.ofNat_eq_coe]
+     dsimp [SetFamily.number_of_hyperedges]
 
   simp_all
   linarith
@@ -369,6 +365,8 @@ by
     rw [hyperedge_with_v]
     dsimp [IdealFamily.degree]
     simp_all only [ Bool.and_eq_true, decide_eq_true_eq]
+    simp_all only [ne_eq, eq_iff_iff, iff_true, Bool.and_eq_true, decide_eq_true_eq, decide_not, Bool.not_eq_true',
+      decide_eq_false_iff_not, hyperedges_with_v, hyperedges_without_v, f, ff]
   have h_size_ineq: hyperedges_with_v.card <= hyperedges_without_v.card := by
     let tmp := Fintype.card_le_of_injective ff ff_inj
     have cardsub1 :hyperedges_with_v = { H // F.sets H ∧ v ∈ H } := by
