@@ -200,3 +200,22 @@ by
 
   simp_all only [not_and, domain, rangeP, rangeQ]
   simp_all only [Finset.card_union_of_disjoint]
+
+lemma filter_union {α : Type} [DecidableEq α] [Fintype α]
+  {P Q : Finset α → Prop} [DecidablePred P] [DecidablePred Q]
+  (S : Finset (Finset α)) :
+  (∀ (s : Finset α), s ∈ S → ¬ (P s ∧ Q s)) →
+    (Finset.filter (λ s => P s ∨ Q s) S) =
+      (Finset.filter (λ s => P s) S) ∪ (Finset.filter (λ s => Q s) S) :=
+by
+  intro a
+  simp_all only [not_and]
+  ext1 a_1
+  simp_all only [Finset.mem_filter, Finset.mem_union]
+  apply Iff.intro
+  · intro a_2
+    simp_all only [true_and]
+  · intro a_2
+    cases a_2 with
+    | inl h => simp_all only [or_false, and_self]
+    | inr h_1 => simp_all only [or_true, and_self]

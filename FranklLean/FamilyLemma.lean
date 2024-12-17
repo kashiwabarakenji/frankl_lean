@@ -63,4 +63,82 @@ by
   · intro _
     linarith
 
+lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s =>F.sets s ∧ v ∉ s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground \ {v}).powerset := by
+      ext1 s
+      apply Iff.intro
+      · intro a
+        rw [Finset.mem_filter] at a
+        rw [Finset.mem_filter]
+        constructor
+        · rw [Finset.mem_powerset] at a
+          rw [Finset.mem_powerset]
+          rw [Finset.subset_sdiff]
+          constructor
+          · exact a.1
+          · dsimp [Disjoint]
+            intro b
+            intro b_in_v
+            let _ := a.2.2 --need to use this to get the contradiction
+            intro v_in_s
+            let tmp := Finset.subset_singleton_iff.mp v_in_s
+            cases tmp
+            case inl h => rw [h]
+            case inr h =>
+              rw [h] at b_in_v
+              have b_in_v2: v ∈ s := by
+                exact Finset.singleton_subset_iff.mp b_in_v
+              contradiction
+        · constructor
+          · exact a.2.1
+          · exact a.2.2
+
+      · intro a
+        rw [Finset.mem_filter] at a
+        rw [Finset.mem_filter]
+        constructor
+        · rw [Finset.mem_powerset] at a
+          rw [Finset.mem_powerset]
+          rw [Finset.subset_sdiff] at a
+          exact a.1.1
+        · exact a.2
+
+lemma family_union (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s => F.sets s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset ∪ Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset:=
+by
+  ext1 a
+  simp_all only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_union]
+  apply Iff.intro
+  · intro a_1
+    simp_all only [true_and]
+    --obtain ⟨_, _⟩ := a_1
+    tauto
+  · intro a_1
+    cases a_1 with
+    | inl h => simp_all only [and_self]
+    | inr h_1 => simp_all only [and_self]
+
+lemma family_union_card (F:SetFamily α)[DecidablePred F.sets] (v : α): (Finset.filter (fun s => F.sets s) F.ground.powerset).card = (Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset).card + (Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset).card :=
+by
+  have contradict: ∀ s: Finset α, s ∈ F.ground.powerset → ¬ ((F.sets s ∧ v ∈ s) ∧ (F.sets s ∧ v ∉ s)) :=
+  by
+    intro s _
+    simp_all only [Finset.mem_powerset, not_and, not_true_eq_false, and_false, not_false_eq_true, and_imp,
+      implies_true]
+
+  let result := filter_num F.ground.powerset contradict
+  have : ∀ s : Finset α, s ∈ F.ground.powerset → (F.sets s ∧ v ∈ s ∨ F.sets s ∧ v ∉ s ↔ F.sets s) := by
+    intro s _
+    apply Iff.intro
+    · intro a
+      cases a with
+      | inl h => exact h.1
+      | inr h => exact h.1
+    · intro a
+      simp_all only [true_and]
+      tauto
+  simp_rw [Finset.filter_congr this] at result
+  exact result
+
+
+
+
 end Frankl

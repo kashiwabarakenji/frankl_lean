@@ -375,7 +375,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
           rw [←Finset.erase_eq]
           exact Finset.erase_subset v F.ground
         · exact h_eq
-
+/-
     have number_small: Finset.filter P F.ground.powerset = Finset.filter P (F.ground \ {v}).powerset := by
       ext1 s
       apply Iff.intro
@@ -418,6 +418,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
           rw [Finset.subset_sdiff] at a
           exact a.1.1
         · exact a.2
+-/
 
     have FDel_hand: IdealDel.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter R F.ground.powerset).card := by
       rw [IdealFamily.number_of_hyperedges]
@@ -431,7 +432,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
       rw [result]
 
       dsimp [P,R]
-      rw [number_small]
+      rw [number_ground F.toSetFamily v]
       simp
       have this1:(Finset.filter (fun s => s = F.ground \ {v}) (F.ground \ {v}).powerset) = {F.ground \ {v}} := by
         ext s
