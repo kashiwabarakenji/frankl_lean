@@ -25,8 +25,8 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
   ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground) (F.ground).powerset, x.card =
   ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground).powerset, x.card + n + 1:=
   by
-    have hv_equal: F.ground.erase v = F.ground \ {v} := by
-      exact Finset.erase_eq F.ground v
+    --have hv_equal: F.ground.erase v = F.ground \ {v} := by
+    --  exact Finset.erase_eq F.ground v
     --let P (s : Finset α) := (F.sets s ∧ v ∉ s)
     --let Q (s: Finset α) := s = F.ground \ {v}
     let leftset := Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground).powerset
@@ -84,8 +84,8 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
     ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card =
     ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground.erase v).powerset, x.card + n:=
     by
-      have hv_equal: F.ground.erase v = F.ground \ {v} := by
-        exact Finset.erase_eq F.ground v
+      --have hv_equal: F.ground.erase v = F.ground \ {v} := by
+      --  exact Finset.erase_eq F.ground v
       --let P (s : Finset α) := (F.sets s ∧ v ∉ s)
       --let Q (s: Finset α) := s = F.ground \ {v}
       let leftset := Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground.erase v).powerset
@@ -99,7 +99,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
         apply Aesop.BuiltinRules.not_intro
         intro a_4
         subst a_4
-        simp_all only [not_true_eq_false]
+        simp_all only [not_true_eq_false,Finset.erase_eq]
 
       have disjoint2: ∀ s ∈ (F.ground.erase v).powerset, ¬((F.sets s ∧ v ∉ s) ∧ s = F.ground.erase v) := by
         intro s a
@@ -108,7 +108,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
         apply Aesop.BuiltinRules.not_intro
         intro a_3
         subst a_3
-        simp_all only [not_true_eq_false]
+        simp_all only [not_true_eq_false,Finset.erase_eq]
 
       have sum_lem:
        ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = (F.ground.erase v)) (F.ground.erase v).powerset, x.card = (∑ x ∈ leftset, x.card) + (∑ x ∈ rightset, x.card):= by
@@ -118,7 +118,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
       by
         simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
         rw [Finset.filter_eq']
-        simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]
+        simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton,Finset.erase_eq]
         rw [Finset.card_sdiff]
         · simp_all only [Finset.card_singleton, add_tsub_cancel_right]
         · simp_all only [Finset.singleton_subset_iff]
@@ -217,7 +217,7 @@ by
     simp_all only [subset_refl]
     exact F.has_ground
 
-lemma pq_transformDel (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)(degone: F.degree v = 1):
+lemma pq_transformDel (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2):
   let idealDelF := IdealFamily.deletion F v v_in_ground ground_ge_two
   ∀ s ∈ idealDelF.ground.powerset, idealDelF.sets s ↔ (idealDelF.sets s ∧ v ∉ s) ∨ s = F.ground \ {v}:=
 by
@@ -263,7 +263,7 @@ by
   have degone: F.degree v = 1 := by
     exact degree_one_if_not_hyperedge F v_in_ground singleton_none
 
-  have pq_lem := pq_transform F v v_in_ground geq2 degone
+  --have pq_lem := pq_transform F v v_in_ground geq2 degone
 
   simp [IdealFamily.normalized_degree_sum]
   let IdealDel := IdealFamily.deletion F v v_in_ground geq2
@@ -301,19 +301,7 @@ by
   simp
 
   have number: IdealDel.number_of_hyperedges = F.number_of_hyperedges := by
-    dsimp [IdealDel]
-    dsimp [IdealFamily.deletion]
-    dsimp [IdealFamily.number_of_hyperedges]
-    --let result := pq_transform F v v_in_ground geq2 degone
-    --#check (Finset.filter_congr result).symm
-    --rw [(Finset.filter_congr result).symm]
-    apply symm
-    let result := pq_transformDel F v v_in_ground geq2 degone
-    simp at result
-    have h_ground: (F.deletion v v_in_ground geq2).ground = F.ground \ {v} := by
-      dsimp [IdealFamily.deletion]
-      rw [Finset.erase_eq]
-    rw [h_ground] at result
+
     let P (s : Finset α) := F.sets s ∧ v ∉ s
     let Q (s: Finset α) := s = F.ground
     let R (s: Finset α) := s = F.ground \ {v}
@@ -340,7 +328,7 @@ by
 
     have contradictPQ: ∀ s: Finset α, s ∈ F.ground.powerset → ¬((P s) ∧ (Q s)) := by
       intro s
-      intro hs
+      intro _
       by_contra h_contra
       obtain ⟨left, right⟩ := h_contra
       have v_in_s: v ∈ s := by
@@ -351,7 +339,7 @@ by
         dsimp [P] at left
         exact left.2
       contradiction
-
+    /-
     have disjointPR: Finset.filter P F.ground.powerset ∩ Finset.filter R F.ground.powerset = ∅ := by
       rw [Finset.eq_empty_iff_forall_not_mem]
       by_contra h_contra
@@ -369,6 +357,7 @@ by
       obtain ⟨left_2, right_1⟩ := right_1
       subst right
       simp_all only
+    -/
 
     have contradictPR: ∀ s: Finset α, s ∈ (F.ground \ {v}).powerset → ¬((P s) ∧ (R s)) := by
       intro s
@@ -378,19 +367,20 @@ by
       dsimp [R] at right
       rw [←right] at h_uv_not
       exact h_uv_not left.1
-
+    /-
     have Fsets: ∀ (s : Finset α), s ∈ F.ground.powerset → (F.sets s ↔ P s ∨ Q s) := by
       intro s
       intro hs
       dsimp [P,Q]
       exact (pq_transform F v v_in_ground geq2 degone s) hs
+    -/
 
     have FidealDelSets: ∀ (s : Finset α), s ∈ (F.ground \ {v}).powerset → ((F.deletion v v_in_ground geq2).sets s ↔ P s ∨ R s) := by
       intro s
       intro hs
       dsimp [P,R]
       rw [←h_ground] at hs
-      rw [(pq_transformDel F v v_in_ground geq2 degone) s hs]
+      rw [(pq_transformDel F v v_in_ground geq2) s hs]
       dsimp [IdealFamily.deletion]
       apply Iff.intro
       intro a
@@ -420,88 +410,134 @@ by
       rw [result2]
       congr
 
+    have Q_card: (Finset.filter Q F.ground.powerset) = {F.ground} := by
+      dsimp [Q]
+      ext1 s
+      simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]
+      constructor
+      · -- (s ∈ powerset ∧ s = F) → s = F
+        intro ⟨_, h_eq⟩
+        exact h_eq
+      · -- s = F → (s ∈ powerset ∧ s = F)
+        intro h_eq
+        constructor
+        · rw [h_eq]
+        · exact h_eq
+
+    have R_card: (Finset.filter R F.ground.powerset) = {F.ground \ {v}} := by
+      dsimp [R]
+      ext1 s
+      simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]
+      constructor
+      · -- (s ∈ powerset ∧ s = F \ {v}) → s = F \ {v}
+        intro ⟨_, h_eq⟩
+        exact h_eq
+      · -- s = F \ {v} → (s ∈ powerset ∧ s = F \ {v})
+        intro h_eq
+        constructor
+        · rw [h_eq]
+          rw [←Finset.erase_eq]
+          exact Finset.erase_subset v F.ground
+        · exact h_eq
+
+    have number_small: Finset.filter P F.ground.powerset = Finset.filter P (F.ground \ {v}).powerset := by
+      ext1 s
+      apply Iff.intro
+      · intro a
+        dsimp [P]
+        dsimp [P] at a
+        rw [Finset.mem_filter] at a
+        rw [Finset.mem_filter]
+        constructor
+        · rw [Finset.mem_powerset] at a
+          rw [Finset.mem_powerset]
+          rw [Finset.subset_sdiff]
+          constructor
+          · exact a.1
+          · dsimp [Disjoint]
+            intro b
+            intro b_in_v
+            let _ := a.2.2 --need to use this to get the contradiction
+            intro v_in_s
+            let tmp := Finset.subset_singleton_iff.mp v_in_s
+            cases tmp
+            case inl h => rw [h]
+            case inr h =>
+              rw [h] at b_in_v
+              have b_in_v2: v ∈ s := by
+                exact Finset.singleton_subset_iff.mp b_in_v
+              contradiction
+        · constructor
+          · exact a.2.1
+          · exact a.2.2
+
+      · intro a
+        dsimp [P]
+        dsimp [P] at a
+        rw [Finset.mem_filter] at a
+        rw [Finset.mem_filter]
+        constructor
+        · rw [Finset.mem_powerset] at a
+          rw [Finset.mem_powerset]
+          rw [Finset.subset_sdiff] at a
+          exact a.1.1
+        · exact a.2
+
     have FDel_hand: IdealDel.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter R F.ground.powerset).card := by
       rw [IdealFamily.number_of_hyperedges]
       dsimp [IdealDel]
       rw [h_ground]
       rw [Finset.filter_congr FidealDelSets]
-      let result := pq_transformDel F v v_in_ground geq2 degone
+      let result := pq_transformDel F v v_in_ground geq2
       --rw [h_ground]
       dsimp [P,R]
 
       have :IdealDel = IdealFamily.deletion F v v_in_ground geq2 := by
         rfl
-      --rw [this]
       simp at result
 
-      let result := fun x hx => (pq_transformDel F v v_in_ground geq2 degone x hx)
       let result2 := filter_num (F.ground \ {v}).powerset contradictPR
 
-      rw [Finset.card_eq_sum_ones] at result2
-      rw [Finset.card_eq_sum_ones] at result2
-      search_proof
-
-    have number_small: Finset.filter P F.ground.powerset = Finset.filter P (F.ground \ {v}).powerset := by
-      ext1 s
-      apply Iff.intro
-      intro a
-      dsimp [P]
-      dsimp [P] at a
-      rw [Finset.mem_filter] at a
-      rw [Finset.mem_filter]
-      constructor
-      · rw [Finset.mem_powerset] at a
-        rw [Finset.mem_powerset]
-        rw [Finset.subset_sdiff]
+      rw [result2]
+      dsimp [P,R]
+      rw [number_small]
+      simp
+      have this1:(Finset.filter (fun s => s = F.ground \ {v}) (F.ground \ {v}).powerset) = {F.ground \ {v}} := by
+        ext s
+        simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]
         constructor
-        · exact a.1
-        · dsimp [Disjoint]
-          intro b
-          intro b_in_v
-          let a22 := a.2.2
-          intro v_in_s
-          let tmp := Finset.subset_singleton_iff.mp v_in_s
-          cases tmp
-          case inl h => rw [h]
-          case inr h =>
-            rw [h] at b_in_v
-            have b_in_v2: v ∈ s := by
-              exact Finset.singleton_subset_iff.mp b_in_v
-            contradiction
-      · constructor
-        · exact a.2.1
-        · exact a.2.2
+        · -- (s ∈ powerset ∧ s = F \ {v}) → s = F \ {v}
+          intro ⟨_, h_eq⟩
+          exact h_eq
+        · -- s = F \ {v} → (s ∈ powerset ∧ s = F \ {v})
+          intro h_eq
+          constructor
+          · rw [h_eq]
+          · exact h_eq
+      rw [this1]
+      have this2:(Finset.filter (fun s => s = F.ground \ {v}) F.ground.powerset) = {F.ground \ {v}} := by
+        ext s
+        simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]
+        constructor
+        · -- (s ∈ powerset ∧ s = F \ {v}) → s = F \ {v}
+          intro ⟨_, h_eq⟩
+          exact h_eq
+        · -- s = F \ {v} → (s ∈ powerset ∧ s = F \ {v})
+          intro h_eq
+          constructor
+          · rw [h_eq]
+            rw [←Finset.erase_eq]
+            exact Finset.erase_subset v F.ground
 
-    --ここから下は間違いかも。
-    have result_congr: ∀ x ∈ (F.ground \ {v}).powerset, (F.deletion v v_in_ground geq2).sets x ↔ F.sets x ∧ v ∉ x ∨ x = F.ground \ {v} := by
-      intro x hx
-      have hx' : x ∈ (F.deletion v v_in_ground geq2).ground.powerset := by
-        dsimp [IdealFamily.deletion]
-        rw [Finset.erase_eq]
-        exact hx
-      let result2 := pq_transformDel F v v_in_ground geq2 degone x hx'
-      rw [IdealFamily.deletion] at result2
-      simp at result2
-      dsimp [IdealFamily.deletion]
-      apply Iff.intro
-      intro a
-      cases a with
-      | inl h => exact Or.inl h
-      | inr h =>
-        rw [←Finset.erase_eq]
-        exact Or.inr h
+          · exact h_eq
+      rw [this2]
 
-      intro a
-      cases a with
-      | inl h => exact Or.inl h
-      | inr h =>
-        rw [←Finset.erase_eq] at h
-        exact Or.inr h
 
-    let result := Finset.filter_congr result_congr
-    rw [←Finset.erase_eq] at result
-
-    sorry
+    rw [F_hand]
+    rw [FDel_hand]
+    rw [Q_card]
+    rw [R_card]
+    simp
 
   have total:  F.total_size_of_hyperedges = IdealDel.total_size_of_hyperedges + 1 := by
     rw [h_ground_card] at h_card
@@ -514,19 +550,46 @@ by
       let tmp:= pq_transform F v v_in_ground geq2 degone
       rw [Finset.filter_congr tmp]
 
-    have right_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card + 1 = ↑((Finset.filter F.sets (F.ground.erase v).powerset).sum Finset.card) + 1 :=
+    have right_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card + 1 = ↑((Finset.filter IdealDel.sets (F.ground.erase v).powerset).sum Finset.card) + 1 :=
     by
-      sorry--pq_transformのidealDelFの部分をFに変える必要がある。
-    sorry
+      let result:= pq_transformDel F v v_in_ground geq2
 
+      let result2:= Finset.filter_congr result
+      dsimp [IdealFamily.deletion] at result2
+      dsimp [IdealDel]
+      dsimp [IdealFamily.deletion]
+      simp
+      rw [result2]
+      congr
+      rw [Finset.erase_eq]
+      ext x
+      apply Iff.intro
+      intro a
+      cases a with
+      | inl h =>
+        constructor
+        · constructor
+          · exact Or.inl h
+          · exact h.2
+      | inr h =>
+        exact Or.inr h
+
+      intro a
+      cases a with
+      | inl h =>
+        exact h.1
+      | inr h =>
+        exact Or.inr h
+    dsimp [IdealDel] at right_side
+    dsimp [IdealFamily.deletion] at right_side
+    simp at right_side
+    rw [←right_side]
+    rw [←left_side]
+    rw [result]
+    rfl
 
   rw [number] at h_ind
-  rw [total] at h_ind
-  have total_geqone: 1 <= F.total_size_of_hyperedges := by
-    exact setfamily_hyperedges_total F
-  have total_geqone_nat: 1 ≤ F.total_size_of_hyperedges.toNat := by
-    exact Int.toNat_le_toNat total_geqone
-  simp at h_ind
+  --rw [←total] at h_ind
   linarith
 
 end Frankl
