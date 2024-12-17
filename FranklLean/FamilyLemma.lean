@@ -63,6 +63,44 @@ by
   · intro _
     linarith
 
+
+
+lemma family_union (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s => F.sets s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset ∪ Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset:=
+by
+  ext1 a
+  simp_all only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_union]
+  apply Iff.intro
+  · intro a_1
+    simp_all only [true_and]
+    --obtain ⟨_, _⟩ := a_1
+    tauto
+  · intro a_1
+    cases a_1 with
+    | inl h => simp_all only [and_self]
+    | inr h_1 => simp_all only [and_self]
+
+lemma family_union_card (F:SetFamily α)[DecidablePred F.sets] (v : α): (Finset.filter (fun s => F.sets s) F.ground.powerset).card = (Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset).card + (Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset).card :=
+by
+  have contradict: ∀ s: Finset α, s ∈ F.ground.powerset → ¬ ((F.sets s ∧ v ∈ s) ∧ (F.sets s ∧ v ∉ s)) :=
+  by
+    intro s _
+    simp_all only [Finset.mem_powerset, not_and, not_true_eq_false, and_false, not_false_eq_true, and_imp,
+      implies_true]
+
+  let result := filter_num F.ground.powerset contradict
+  have : ∀ s : Finset α, s ∈ F.ground.powerset → (F.sets s ∧ v ∈ s ∨ F.sets s ∧ v ∉ s ↔ F.sets s) := by
+    intro s _
+    apply Iff.intro
+    · intro a
+      cases a with
+      | inl h => exact h.1
+      | inr h => exact h.1
+    · intro a
+      simp_all only [true_and]
+      tauto
+  simp_rw [Finset.filter_congr this] at result
+  exact result
+
 lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s =>F.sets s ∧ v ∉ s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground \ {v}).powerset := by
       ext1 s
       apply Iff.intro
@@ -101,44 +139,192 @@ lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filt
           rw [Finset.subset_sdiff] at a
           exact a.1.1
         · exact a.2
+---------------------------------------------------
+theorem fintype_card_eq_of_bijective {α β : Type*}
+  [Fintype α] [Fintype β][DecidableEq β] (f : α → β) (h : Function.Bijective f) :
+  Fintype.card α = Fintype.card β := by
+  let s := (Finset.univ : Finset α)
+  let t := (Finset.univ : Finset β)
 
-lemma family_union (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s => F.sets s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset ∪ Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset:=
+  have : (s.image f).card = s.card := Finset.card_image_of_injective s h.injective
+  have : s.image f = t := Finset.ext (λ b => by
+    constructor
+    · -- 「→」方向 : b ∈ s.image f ⇒ b ∈ t
+      intro _
+      exact Finset.mem_univ b
+    · -- 「←」方向 : b ∈ t ⇒ b ∈ s.image f
+      intro _
+      obtain ⟨a, ha⟩ := h.surjective b
+      rw [Finset.mem_image]
+      use a
+      exact ⟨Finset.mem_univ a, ha⟩
+  )
+
+  calc
+    Fintype.card α
+      = s.card               := by rw [Finset.card_univ]
+    _ = (s.image f).card     := by simp_all only [Multiset.bijective_iff_map_univ_eq_univ, Finset.card_univ, s, t]
+    _ = t.card               := by simp_all only [Multiset.bijective_iff_map_univ_eq_univ, Finset.card_univ, s, t]
+    _ = Fintype.card β       := by rw [Finset.card_univ]
+
+
+lemma ha (F:SetFamily α)[DecidablePred F.sets] (v : α):
+  let range := Finset.filter (fun (s :Finset α) ↦ F.sets s ∧ v ∈ s) F.ground.powerset
+  let domain := Finset.filter (fun (s :Finset α) ↦ ∃ (H:Finset α), F.sets H ∧ v ∈ H ∧ s = H.erase v) (F.ground.erase v).powerset
+  ∀ s ∈ domain, s ∪ {v} ∈ range :=
 by
-  ext1 a
-  simp_all only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_union]
-  apply Iff.intro
-  · intro a_1
-    simp_all only [true_and]
-    --obtain ⟨_, _⟩ := a_1
-    tauto
-  · intro a_1
-    cases a_1 with
-    | inl h => simp_all only [and_self]
-    | inr h_1 => simp_all only [and_self]
-
-lemma family_union_card (F:SetFamily α)[DecidablePred F.sets] (v : α): (Finset.filter (fun s => F.sets s) F.ground.powerset).card = (Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset).card + (Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset).card :=
-by
-  have contradict: ∀ s: Finset α, s ∈ F.ground.powerset → ¬ ((F.sets s ∧ v ∈ s) ∧ (F.sets s ∧ v ∉ s)) :=
-  by
-    intro s _
-    simp_all only [Finset.mem_powerset, not_and, not_true_eq_false, and_false, not_false_eq_true, and_imp,
-      implies_true]
-
-  let result := filter_num F.ground.powerset contradict
-  have : ∀ s : Finset α, s ∈ F.ground.powerset → (F.sets s ∧ v ∈ s ∨ F.sets s ∧ v ∉ s ↔ F.sets s) := by
-    intro s _
+  intro s
+  simp
+  intro s_1 hs_1
+  intro x
+  intro Fsets
+  intro v_in_x
+  intro sv
+  rw [sv]
+  rw [sv] at hs_1
+  have : x.erase v ∪ {v} = x := by
+    subst sv
+    ext
+    simp_all only [Finset.mem_union, Finset.mem_erase, ne_eq, Finset.mem_singleton]
     apply Iff.intro
     · intro a
       cases a with
-      | inl h => exact h.1
-      | inr h => exact h.1
+      | inl h => simp_all only
+      | inr h_1 =>
+        subst h_1
+        simp_all only
     · intro a
-      simp_all only [true_and]
+      simp_all only [and_true]
       tauto
-  simp_rw [Finset.filter_congr this] at result
-  exact result
+  rw [this]
+  dsimp [s]
+  rw [Finset.mem_filter]
+  constructor
+  rw [Finset.mem_powerset]
+  exact F.inc_ground x Fsets
+  exact ⟨Fsets, v_in_x⟩
 
+lemma contraction_bijective (F:SetFamily α)[DecidablePred F.sets] (v : α):
+  let range:= Finset.filter (fun (s :Finset α) ↦ F.sets s ∧ v ∈ s) F.ground.powerset
+  let domain := Finset.filter (fun (s :Finset α) ↦ ∃ (H:Finset α), F.sets H ∧ v ∈ H ∧ s = H.erase v) (F.ground.erase v).powerset
+  let f : domain → range := fun s => ⟨s.val ∪ {v}, ha F v s s.property⟩
+  Function.Bijective f:=
+by
+  dsimp [Function.Bijective]
+  constructor
+  --injection
+  · intro a1 a2
+    intro vals
+    simp at vals
 
+    have h1: v ∉ a1.val:= by
+      intro h
+      have h' := a1.property
+      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      obtain ⟨val, property⟩ := a1
+      obtain ⟨val_1, property_1⟩ := a2
+      obtain ⟨_, right⟩ := h'
+      obtain ⟨w, h_1⟩ := right
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true]
 
+    have h2: v ∉ a2.val:= by
+      intro h
+      have h' := a2.property
+      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      obtain ⟨val, property⟩ := a1
+      obtain ⟨val_1, property_1⟩ := a2
+      obtain ⟨_, right⟩ := h'
+      obtain ⟨w, h_1⟩ := right
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true]
+
+    ext x
+    apply Iff.intro
+    intro a
+    have : x ∈ a2.val ∪ {v} := by
+      rw [←vals]
+      rw [Finset.mem_union]
+      exact Or.inl a
+    rw [Finset.mem_union] at this
+    cases this with
+    | inl h => exact h
+    | inr h_1 =>
+      simp_all only [Finset.mem_singleton]
+
+    intro a
+    have : x ∈ a1.val ∪ {v} := by
+      rw [vals]
+      rw [Finset.mem_union]
+      exact Or.inl a
+    rw [Finset.mem_union] at this
+    cases this with
+    | inl h => exact h
+    | inr h_1 =>
+      simp_all only [Finset.mem_singleton]
+
+  --surjection
+  · intro a
+    simp
+    have : a.val.erase v ∈ Finset.filter (fun (s :Finset α) ↦ ∃ (H:Finset α), F.sets H ∧ v ∈ H ∧ s = H.erase v) (F.ground.erase v).powerset:=
+    by
+      rw [Finset.mem_filter]
+      constructor
+      · rw [Finset.mem_powerset]
+        obtain ⟨val, property⟩ := a
+        simp_all only
+        simp_all only [Finset.mem_filter, Finset.mem_powerset]
+        obtain ⟨left, _⟩ := property
+        intro x hx
+        simp_all only [Finset.mem_erase, ne_eq]
+        obtain ⟨_, right_1⟩ := hx
+        simp_all only [not_false_eq_true, true_and]
+        exact left right_1
+
+      · constructor
+        apply And.intro
+        obtain ⟨val, property⟩ := a
+        on_goal 2 => apply And.intro
+        on_goal 3 => {rfl
+        }
+        simp_all only
+        simp_all only [Finset.mem_filter, Finset.mem_powerset]
+        · obtain ⟨val, property⟩ := a
+          simp_all only
+          simp_all only [Finset.mem_filter, Finset.mem_powerset]
+    use a.val.erase v
+    constructor
+    · simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      ext a_1 : 2
+      simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, Finset.mem_union, Finset.mem_erase, ne_eq,
+        Finset.mem_singleton]
+      obtain ⟨val, property⟩ := a
+      simp_all only
+      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      apply Iff.intro
+      · intro a
+        cases a with
+        | inl h => simp_all only
+        | inr h_1 =>
+          subst h_1
+          simp_all only
+      · intro a
+        simp_all only [and_true]
+        tauto
+
+    · simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self]
+
+lemma contraction_eq_card (F:SetFamily α)[DecidablePred F.sets] (v : α):
+  let range:= Finset.filter (fun (s :Finset α) ↦ F.sets s ∧ v ∈ s) F.ground.powerset
+  let domain := Finset.filter (fun (s :Finset α) ↦ ∃ (H:Finset α), F.sets H ∧ v ∈ H ∧ s = H.erase v) (F.ground.erase v).powerset
+  range.card = domain.card :=
+by
+  let range:= Finset.filter (fun (s :Finset α) ↦ F.sets s ∧ v ∈ s) F.ground.powerset
+  let domain := Finset.filter (fun (s :Finset α) ↦ ∃ (H:Finset α), F.sets H ∧ v ∈ H ∧ s = H.erase v) (F.ground.erase v).powerset
+  simp
+  have h := contraction_bijective F v
+  let f : domain → range := fun s => ⟨s.val ∪ {v}, ha F v s s.property⟩
+  let result := fintype_card_eq_of_bijective f h
+  rw [Fintype.card_coe domain] at result
+  rw [Fintype.card_coe range] at result
+  simp_all only [domain, range]
 
 end Frankl

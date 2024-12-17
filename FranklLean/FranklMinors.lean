@@ -292,24 +292,58 @@ instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} 
     exact thisF_setsA
 }
 
-lemma ground_deletion  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+lemma ground_deletion_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (IdealFamily.deletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
-
   by
     rw [IdealFamily.deletion]
     rw [Finset.card_erase_of_mem hx]
 
-lemma ground_contraction  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+lemma ground_deletion  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (IdealFamily.deletion F x hx ground_ge_two).ground = F.ground \ {x} :=
+by
+  rw [IdealFamily.deletion]
+  simp_all only
+  simp_all only [ge_iff_le]
+  ext1 a
+  simp_all only [Finset.mem_erase, ne_eq, Finset.mem_sdiff, Finset.mem_singleton]
+  apply Iff.intro
+  · intro a_1
+    simp_all only [not_false_eq_true, and_self]
+  · intro a_1
+    simp_all only [not_false_eq_true, and_self]
+
+lemma ground_contraction_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.contraction F.toSetFamily x hx ground_ge_two).ground.card = F.ground.card - 1 :=
   by
     rw [SetFamily.contraction]
     rw [Finset.card_erase_of_mem hx]
 
-lemma ground_contraction_family  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
+lemma ground_contraction  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (SetFamily.contraction F x hx ground_ge_two).ground = F.ground \ {x} :=
+by
+  rw [SetFamily.contraction]
+  simp_all only
+  simp_all only [ge_iff_le]
+  ext1 a
+  simp_all only [Finset.mem_erase, ne_eq, Finset.mem_sdiff, Finset.mem_singleton]
+  apply Iff.intro
+  · intro a_1
+    simp_all only [not_false_eq_true, and_self]
+  · intro a_1
+    simp_all only [not_false_eq_true, and_self]
+
+lemma ground_contraction_ideal  (F : IdealFamily α) (x : α) (hs: F.sets {x}) (ground_ge_two: F.ground.card ≥ 2):
+  (IdealFamily.contraction F x hs ground_ge_two).ground = F.ground \ {x} :=
+by
+  rw [IdealFamily.contraction]
+  simp
+  search_proof
+
+
+lemma ground_contraction_ideal_card  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
   (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = F.ground.card - 1 :=
   by
     rw [IdealFamily.contraction]
-    rw [ground_contraction]
-
+    rw [ground_contraction_card]
 
 end Frankl
