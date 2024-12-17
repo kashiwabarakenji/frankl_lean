@@ -255,76 +255,39 @@ by
     · intro a_1
       simp_all only [not_false_eq_true, and_self]
 
--- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
-lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
-  : F.normalized_degree_sum ≤ 0 :=
-by
-  have degone: F.degree v = 1 := by
-    exact degree_one_if_not_hyperedge F v_in_ground singleton_none
-
-  --have pq_lem := pq_transform F v v_in_ground geq2 degone
-
-  simp [IdealFamily.normalized_degree_sum]
-  let IdealDel := IdealFamily.deletion F v v_in_ground geq2
-  --haveI : DecidablePred IdealDel.sets :=
-  --  by apply_instance
-  have h_ground: IdealDel.ground = F.ground \ {v} := by
-    dsimp [IdealDel]
-    dsimp [IdealFamily.deletion]
-    rw [Finset.erase_eq]
-  have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
-    rw [h_ground]
-    rw [Finset.card_sdiff]
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
-  haveI : DecidablePred IdealDel.sets :=
+lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v}))):
+    let IdealDel := IdealFamily.deletion F v v_in_ground geq2
+    haveI : DecidablePred IdealDel.sets :=
+     by
+       dsimp [IdealDel]
+       dsimp [IdealFamily.deletion]
+       intro s
+       infer_instance
+    IdealDel.number_of_hyperedges = F.number_of_hyperedges :=
   by
-    dsimp [IdealDel]
-    dsimp [IdealFamily.deletion]
-    intro s
-    infer_instance
+    let IdealDel := IdealFamily.deletion F v v_in_ground geq2
+    haveI : DecidablePred IdealDel.sets :=
+     by
+       dsimp [IdealDel]
+       dsimp [IdealFamily.deletion]
+       intro s
+       infer_instance
+    have h_ground: IdealDel.ground = F.ground \ {v} := by
+      dsimp [IdealDel]
+      dsimp [IdealFamily.deletion]
+      rw [Finset.erase_eq]
+    have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
+      rw [h_ground]
+      rw [Finset.card_sdiff]
+      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
+      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
 
-  let ihnds := ih IdealDel h_ground_card
-  dsimp [IdealFamily.normalized_degree_sum] at ihnds
-
-  have h_ground: IdealDel.ground = F.ground \ {v} := by
-    dsimp [IdealDel]
-    dsimp [IdealFamily.deletion]
-    rw [Finset.erase_eq]
-
-  have h_card : F.ground.card = IdealDel.ground.card + 1 := by
-    rw [h_ground_card]
-    rw [Nat.sub_add_cancel]
-    linarith
-  have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2 (by linarith [h_card]) (by linarith [ihnds]) rfl
-  simp
-
-  have number: IdealDel.number_of_hyperedges = F.number_of_hyperedges := by
+    have degone: F.degree v = 1 := by
+      exact degree_one_if_not_hyperedge F v_in_ground singleton_none
 
     let P (s : Finset α) := F.sets s ∧ v ∉ s
     let Q (s: Finset α) := s = F.ground
     let R (s: Finset α) := s = F.ground \ {v}
-
-/-
-    have disjointPQ: Finset.filter P F.ground.powerset ∩ Finset.filter Q F.ground.powerset = ∅ := by
-      rw [Finset.eq_empty_iff_forall_not_mem]
-      by_contra h_contra
-      rw [not_forall] at h_contra
-      push_neg at h_contra
-      obtain ⟨s, hs⟩ := h_contra
-      rw [Finset.mem_inter] at hs
-      rw [Finset.mem_filter] at hs
-      rw [Finset.mem_filter] at hs
-      rw [Finset.mem_powerset] at hs
-      simp_all only [ge_iff_le, Nat.reduceLeDiff]
-      obtain ⟨left, right⟩ := hs
-      obtain ⟨left, right_1⟩ := left
-      obtain ⟨left_1, right⟩ := right
-      obtain ⟨left_2, right_1⟩ := right_1
-      subst right
-      simp_all only
--/
 
     have contradictPQ: ∀ s: Finset α, s ∈ F.ground.powerset → ¬((P s) ∧ (Q s)) := by
       intro s
@@ -339,25 +302,6 @@ by
         dsimp [P] at left
         exact left.2
       contradiction
-    /-
-    have disjointPR: Finset.filter P F.ground.powerset ∩ Finset.filter R F.ground.powerset = ∅ := by
-      rw [Finset.eq_empty_iff_forall_not_mem]
-      by_contra h_contra
-      rw [not_forall] at h_contra
-      push_neg at h_contra
-      obtain ⟨s, hs⟩ := h_contra
-      rw [Finset.mem_inter] at hs
-      rw [Finset.mem_filter] at hs
-      rw [Finset.mem_filter] at hs
-      rw [Finset.mem_powerset] at hs
-      simp_all only [ge_iff_le, Nat.reduceLeDiff]
-      obtain ⟨left, right⟩ := hs
-      obtain ⟨left, right_1⟩ := left
-      obtain ⟨left_1, right⟩ := right
-      obtain ⟨left_2, right_1⟩ := right_1
-      subst right
-      simp_all only
-    -/
 
     have contradictPR: ∀ s: Finset α, s ∈ (F.ground \ {v}).powerset → ¬((P s) ∧ (R s)) := by
       intro s
@@ -367,13 +311,6 @@ by
       dsimp [R] at right
       rw [←right] at h_uv_not
       exact h_uv_not left.1
-    /-
-    have Fsets: ∀ (s : Finset α), s ∈ F.ground.powerset → (F.sets s ↔ P s ∨ Q s) := by
-      intro s
-      intro hs
-      dsimp [P,Q]
-      exact (pq_transform F v v_in_ground geq2 degone s) hs
-    -/
 
     have FidealDelSets: ∀ (s : Finset α), s ∈ (F.ground \ {v}).powerset → ((F.deletion v v_in_ground geq2).sets s ↔ P s ∨ R s) := by
       intro s
@@ -405,7 +342,6 @@ by
       rw [IdealFamily.number_of_hyperedges]
       let result := pq_transform F v v_in_ground geq2 degone
       rw [Finset.filter_congr result]
-      --(F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)(degone: F.degree v = 1):-- (singleton_none : ¬ (F.sets {v}))
       let result2 := filter_num F.ground.powerset contradictPQ
       rw [result2]
       congr
@@ -488,17 +424,12 @@ by
       dsimp [IdealDel]
       rw [h_ground]
       rw [Finset.filter_congr FidealDelSets]
-      let result := pq_transformDel F v v_in_ground geq2
-      --rw [h_ground]
-      dsimp [P,R]
+      --let result := pq_transformDel F v v_in_ground geq2
+      --simp at result
 
-      have :IdealDel = IdealFamily.deletion F v v_in_ground geq2 := by
-        rfl
-      simp at result
+      let result := filter_num (F.ground \ {v}).powerset contradictPR
+      rw [result]
 
-      let result2 := filter_num (F.ground \ {v}).powerset contradictPR
-
-      rw [result2]
       dsimp [P,R]
       rw [number_small]
       simp
@@ -532,14 +463,51 @@ by
           · exact h_eq
       rw [this2]
 
-
     rw [F_hand]
-    rw [FDel_hand]
-    rw [Q_card]
-    rw [R_card]
     simp
+    simp_all only [Finset.mem_powerset, not_and, and_imp, Finset.card_singleton, Nat.cast_one, IdealDel, P, Q, R]
+    convert FDel_hand
+
+-- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
+lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
+  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
+  : F.normalized_degree_sum ≤ 0 :=
+by
+
+  let IdealDel := IdealFamily.deletion F v v_in_ground geq2
+  haveI : DecidablePred IdealDel.sets :=
+  by
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    intro s
+    infer_instance
+
+  have h_ground: IdealDel.ground = F.ground \ {v} := by
+    dsimp [IdealDel]
+    dsimp [IdealFamily.deletion]
+    rw [Finset.erase_eq]
+  have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
+    rw [h_ground]
+    rw [Finset.card_sdiff]
+    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
+    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
+
+  have h_card : F.ground.card = IdealDel.ground.card + 1 := by
+    rw [h_ground_card]
+    rw [Nat.sub_add_cancel]
+    linarith
+
+  let ihnds := ih IdealDel h_ground_card
+  dsimp [IdealFamily.normalized_degree_sum] at ihnds
+  have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2 (by linarith [h_card]) (by linarith [ihnds]) rfl
+
+  simp [IdealFamily.normalized_degree_sum]
+
+  have number := number_lem F v v_in_ground geq2 singleton_none h_uv_not
 
   have total:  F.total_size_of_hyperedges = IdealDel.total_size_of_hyperedges + 1 := by
+    have degone: F.degree v = 1 := by
+      exact degree_one_if_not_hyperedge F v_in_ground singleton_none
     rw [h_ground_card] at h_card
     let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not geq2 h_card
     dsimp [IdealDel]
@@ -558,7 +526,6 @@ by
       dsimp [IdealFamily.deletion] at result2
       dsimp [IdealDel]
       dsimp [IdealFamily.deletion]
-      simp
       rw [result2]
       congr
       rw [Finset.erase_eq]
@@ -587,9 +554,12 @@ by
     rw [←left_side]
     rw [result]
     rfl
+  rw [←total] at h_ind
+  simp at number
 
-  rw [number] at h_ind
-  --rw [←total] at h_ind
-  linarith
+  rw [←number]
+  dsimp [IdealDel] at h_ind
+  rw [mul_comm]
+  convert h_ind
 
 end Frankl
