@@ -337,8 +337,9 @@ lemma ground_contraction_ideal  (F : IdealFamily α) (x : α) (hs: F.sets {x}) (
 by
   rw [IdealFamily.contraction]
   simp
-  search_proof
-
+  rw [SetFamily.contraction]
+  simp
+  rw [Finset.erase_eq]
 
 lemma ground_contraction_ideal_card  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
   (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = F.ground.card - 1 :=

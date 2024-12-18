@@ -327,4 +327,64 @@ by
   rw [Fintype.card_coe range] at result
   simp_all only [domain, range]
 
+
+
+/--
+A small lemma that splits the sum over a union of two disjoint finsets.
+-/
+lemma sum_union_disjoint {α β : Type*} [AddCommMonoid β] [DecidableEq α]
+  {s₁ s₂ : Finset α} (f : α → β) (h : Disjoint s₁ s₂) :
+  (s₁ ∪ s₂).sum f = s₁.sum f + s₂.sum f :=
+Finset.sum_union h
+
+/--
+This lemma partitions the hyperedges of `F` by whether they contain `v` or not, and shows that
+the total size of hyperedges is preserved after this partition.
+-/
+lemma sum_partition_by_v (F : SetFamily α) (v : α) [DecidablePred F.sets] :
+  {F with sets := λ s => F.sets s ∧ v ∈ s, inc_ground := λ s hs => F.inc_ground s hs.1 }.total_size_of_hyperedges  +
+  {F with sets := λ s => F.sets s ∧ v ∉ s, inc_ground := λ s hs => F.inc_ground s hs.1 }.total_size_of_hyperedges  =
+  F.total_size_of_hyperedges :=
+by
+  -- Expand each total_size_of_hyperedges definition
+  rw [SetFamily.total_size_of_hyperedges,SetFamily.total_size_of_hyperedges,SetFamily.total_size_of_hyperedges]
+
+  -- Define Fv and Fnv as the sets partitioned by v ∈ s or v ∉ s
+  let Fv := (Finset.powerset F.ground).filter (λ s => F.sets s ∧ v ∈ s)
+  let Fnv := (Finset.powerset F.ground).filter (λ s => F.sets s ∧ v ∉ s)
+  let Fsets := (Finset.powerset F.ground).filter F.sets
+
+  /- Show that Fsets = Fv ∪ Fnv. In other words, any set in Fsets either contains v or not. -/
+  have disjoint_v : Fsets = Fv ∪ Fnv := by
+    ext x
+    simp only [Finset.mem_filter, Finset.mem_union, Finset.mem_powerset]
+    apply Iff.intro
+    · -- Forward direction
+      intro a
+      simp_all only [Finset.mem_filter, Finset.mem_powerset, true_and, Fsets, Fv, Fnv]
+      obtain ⟨_, right⟩ := a
+      contrapose! right
+      simp_all only [not_and_self]
+    · -- Backward direction
+      intro a
+      simp_all only [Finset.mem_filter, Finset.mem_powerset, Fv, Fnv, Fsets]
+      cases a with
+      | inl h => simp_all only [and_self]
+      | inr h_1 => simp_all only [and_self]
+
+  /- We now use the sum over the union to split total_size_of_hyperedges
+     into two parts: one where v ∈ s and one where v ∉ s. -/
+  have union_card_sum : (Fv ∪ Fnv).sum Finset.card = Fv.sum Finset.card + Fnv.sum Finset.card :=
+  by
+    -- We just apply our separate lemma for sum over a union of disjoint sets.
+    apply sum_union_disjoint Finset.card
+    -- Prove Fv and Fnv are disjoint: if a set is in Fv (v ∈ s) it can't be in Fnv (v ∉ s).
+    rw [Finset.disjoint_left]
+    intros a ha
+    simp_all only [Finset.mem_filter, Finset.mem_powerset, not_true_eq_false, and_false, not_false_eq_true, Fsets, Fv,
+      Fnv]
+
+  -- Combine everything
+  simp_all only [Int.ofNat_eq_coe, Nat.cast_sum, Nat.cast_add, Fsets, Fv, Fnv]
+
 end Frankl
