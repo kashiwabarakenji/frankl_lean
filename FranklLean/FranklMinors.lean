@@ -23,6 +23,22 @@ def SetFamily.deletion {α : Type} [DecidableEq α] [Fintype α](F : SetFamily �
         exact Finset.subset_erase.2 ⟨hs', right⟩
   }
 
+/-
+noncomputable instance deletionDecidablePred (F : SetFamily α) [DecidablePred F.sets] (x : α)
+  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (SetFamily.deletion F x hx ground_ge_two).sets :=
+λ s => by
+  apply Classical.propDecidable
+-/
+
+instance (F : SetFamily α) [d: DecidablePred F.sets] (x : α)
+  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (SetFamily.deletion F x hx ground_ge_two).sets := by
+  dsimp [SetFamily.deletion]
+  simp_all only [ge_iff_le]
+  infer_instance
+
+
 --infixl:65 " ∖ " => SetFamily.deletion
 
 -- Proving that the deletion operation on an IdealFamily produces another IdealFamily.
@@ -98,6 +114,14 @@ def IdealFamily.deletion {α : Type} [DecidableEq α] [Fintype α] (F : IdealFam
     nonempty_ground := ground_nonempty_after_minor F.ground x hx ground_ge_two,
 }
 
+instance (F : IdealFamily α) [d: DecidablePred F.sets] (x : α)
+  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (IdealFamily.deletion F x hx ground_ge_two).sets :=
+  by
+    dsimp [IdealFamily.deletion]
+    simp_all only [ge_iff_le]
+    infer_instance
+
 def SetFamily.contraction (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
   { ground := F.ground.erase x,
 
@@ -123,16 +147,30 @@ def SetFamily.contraction (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (gro
     nonempty_ground := ground_nonempty_after_minor F.ground x hx ground_ge_two
   }
 
+instance (F : SetFamily α) [d: DecidablePred F.sets] (x : α)
+  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (SetFamily.contraction F x hx ground_ge_two).sets := by
+  dsimp [SetFamily.contraction]
+  simp_all only [ge_iff_le]
+  infer_instance
+/-
+noncomputable instance contractionDecidablePred (F : SetFamily α) [DecidablePred F.sets] (x : α)
+  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (SetFamily.contraction F x hx ground_ge_two).sets :=
+λ s => by
+  apply Classical.propDecidable
+-/
+
 -- Proving that if we contract an IdealFamily, we still get an IdealFamily.
-instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} ) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
+instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hs : F.sets {x} ) (ground_ge_two: F.ground.card ≥ 2): IdealFamily α :=
 {
-  SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two with
+  SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hs (by simp)) ground_ge_two with
 
   has_empty := by
     -- We must show that the empty set is in the contracted family.
     use {x}
     constructor
-    exact hx       -- Show F.sets {x}
+    exact hs      -- Show F.sets {x}
     constructor
     simp           -- Show x ∈ {x}
     simp
@@ -144,11 +182,11 @@ instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} 
     exact F.has_ground
     constructor
     -- We need to show x ∈ F.ground
-    exact F.inc_ground {x} hx (by simp)
+    exact F.inc_ground {x} hs (by simp)
     rfl
 
   down_closed := by
-    let thisF := SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hx (by simp)) ground_ge_two
+    let thisF := SetFamily.contraction (F.toSetFamily) x (by exact F.inc_ground {x} hs (by simp)) ground_ge_two
     have thisg : thisF.ground = F.ground.erase x := by rfl
     have thisinc: thisF.ground ⊆ F.ground := by
       rw [thisg]
@@ -179,7 +217,7 @@ instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} 
       by_cases hy' : x = y
       case pos =>
         rw [←hy']
-        exact F.inc_ground {x} hx (by simp)
+        exact F.inc_ground {x} hs (by simp)
       case neg =>
         have hinThis: y ∈ thisF.ground := by tauto
         have y_in_F_ground : y ∈ F.ground := by
@@ -292,6 +330,125 @@ instance IdealFamily.contraction (F : IdealFamily α) (x : α) (hx : F.sets {x} 
     exact thisF_setsA
 }
 
+instance (F : IdealFamily α) [d: DecidablePred F.sets] (x : α)
+  (hs : F.sets {x}) (ground_ge_two : F.ground.card ≥ 2) :
+  DecidablePred (IdealFamily.contraction F x hs ground_ge_two).sets := by
+    dsimp [IdealFamily.contraction]
+    infer_instance
+
+lemma set_ideal_contraction (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2):--(h_uv_have : (F.sets (F.ground \ {x}))) :
+  ∀ s : Finset α , ((F.contraction x hs ground_ge_two).sets s ↔ (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
+  by
+   intro s
+   rfl
+
+lemma set_ideal_contraction_num  (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2)
+  [DecidablePred (F.contraction x hs ground_ge_two).sets]:
+  (F.contraction x hs ground_ge_two).number_of_hyperedges = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).number_of_hyperedges :=
+  by
+    dsimp [IdealFamily.contraction]
+    dsimp [SetFamily.contraction]
+    rfl
+
+lemma set_ideal_contraction_total (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2)
+  [DecidablePred (F.contraction x hs ground_ge_two).sets]:
+  (F.contraction x hs ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).total_size_of_hyperedges :=
+  by
+    dsimp [IdealFamily.contraction]
+    dsimp [SetFamily.contraction]
+    rfl
+
+
+lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x}))) :
+  ∀ s : Finset α , ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
+  by
+   intro s
+   dsimp [IdealFamily.deletion]
+   dsimp [SetFamily.deletion]
+   simp_all only [ge_iff_le, or_iff_left_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, false_and,
+     not_false_eq_true, and_true]
+   intro a
+   subst a
+   convert h_uv_have
+   ext1 a
+   simp_all only [Finset.mem_erase, ne_eq, Finset.mem_sdiff, Finset.mem_singleton]
+   apply Iff.intro
+   · intro a_1
+     simp_all only [not_false_eq_true, and_self]
+   · intro a_1
+     simp_all only [not_false_eq_true, and_self]
+
+lemma ideal_deletion_noneuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x}))) :
+  ∀ s : Finset α , s ≠ F.ground \ {x} → ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
+by
+  intro s hns
+  dsimp [IdealFamily.deletion]
+  dsimp [SetFamily.deletion]
+  apply Iff.intro
+  · intro h
+    constructor
+    · cases h with
+        | inl h1 =>
+          simp_all only [and_self, decide_eq_false_iff_not]
+        | inr h1 =>
+          simp_all only [and_self, decide_eq_false_iff_not]
+          rw [Finset.erase_eq] at hns
+          subst h1
+          simp_all only [ge_iff_le, ne_eq, not_true_eq_false]
+    · simp_all only [ge_iff_le, ne_eq]
+      apply Aesop.BuiltinRules.not_intro
+      intro a
+      simp_all only [not_true_eq_false, and_false, false_or, Finset.mem_erase, ne_eq, false_and]
+  · intro h
+    constructor
+    · exact h
+
+lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges :=
+  by
+    dsimp [IdealFamily.deletion]
+    dsimp [SetFamily.deletion]
+    dsimp [IdealFamily.number_of_hyperedges]
+    dsimp [SetFamily.number_of_hyperedges]
+    simp_all only [Nat.cast_inj]
+    sorry
+
+lemma ideal_deletion_haveuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges :=
+by
+  dsimp [IdealFamily.deletion]
+  dsimp [SetFamily.deletion]
+  dsimp [IdealFamily.total_size_of_hyperedges]
+  dsimp [SetFamily.total_size_of_hyperedges]
+  simp_all only [Nat.cast_inj]
+  sorry
+
+
+lemma ideal_deletion_noneuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges + 1 :=
+  by
+    dsimp [IdealFamily.deletion]
+    dsimp [SetFamily.deletion]
+    dsimp [IdealFamily.number_of_hyperedges]
+    dsimp [SetFamily.number_of_hyperedges]
+    --simp_all only [Nat.cast_inj]
+    sorry --noneuvのケースなので難しい。card_bijを使わないで、全体集合かそうでないかで分解するのがいいかも。
+
+lemma ideal_deletion_noneuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
+by
+  dsimp [IdealFamily.deletion]
+  dsimp [SetFamily.deletion]
+  dsimp [IdealFamily.total_size_of_hyperedges]
+  dsimp [SetFamily.total_size_of_hyperedges]
+  sorry
+
+
+----------------------------
 lemma ground_deletion_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (IdealFamily.deletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
   by

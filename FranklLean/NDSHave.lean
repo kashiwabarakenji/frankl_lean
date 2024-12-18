@@ -308,5 +308,25 @@ by
 
   congr
 
+theorem nonpositive_nds_haveUV (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets] (hx_hyperedge : F.sets (F.ground \ {x})) (hs : F.sets {x})
+   --[DecidablePred (F.toSetFamily.deletion x hx geq2).sets] [DecidablePred (F.toSetFamily.contraction x hx geq2).sets]
+   :
+  F.toSetFamily.normalized_degree_sum =
+  (F.toSetFamily.deletion x hx geq2).normalized_degree_sum +
+  (F.toSetFamily.contraction x hx geq2).normalized_degree_sum
+  +2*(F.degree x) - F.number_of_hyperedges :=
+by
+  dsimp [SetFamily.normalized_degree_sum]
+  haveI : DecidablePred (F.contraction x hs geq2).sets := by
+    dsimp [IdealFamily.contraction]
+    infer_instance
+  have number := number_nds_have F x geq2 hx hs
+
+  have total := hyperedge_totalsize_deletion_contraction F.toSetFamily x hx geq2 hs
+
+  --ここに帰納法の過程を入れるのか。
+
+
 
 end Frankl
