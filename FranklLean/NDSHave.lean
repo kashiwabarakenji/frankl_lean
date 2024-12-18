@@ -150,8 +150,6 @@ lemma contraction_total_size (F : SetFamily α) [DecidablePred F.sets] (x : α)
     ((Finset.powerset F.ground).filter (λ s => F.sets s ∧ x ∈ s)).sum (λ s => Int.ofNat (Finset.card s) - 1) :=
 by
   -- Step 1: Use the sumbij lemma
-  --let domain00 := (Finset.powerset F.ground).filter (λ s => F.sets s ∧ x ∈ s)
-  --let range00 := (Finset.powerset (F.ground.erase x)).filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x)
   have sumbij_result := sumbij F x
 
   -- Step 2: Expand total_size_of_hyperedges for the contraction
@@ -161,23 +159,11 @@ by
   simp at sumbij_result
   simp
 
-  have sumbij_result_int: ∑ x ∈ (Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset), (↑ x.card) - ↑((Finset.filter (fun s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset).card) =
-   ∑ x ∈ (Finset.filter (fun s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset), (↑x.card)
-   :=
-  by
-    simp_all only [Int.ofNat_eq_coe, Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, mul_one, Nat.cast_add,
-      Nat.cast_sum, sub_left_inj, add_sub_cancel_right]
-    simp_all only [add_tsub_cancel_right]
-
-  simp at sumbij_result_int
-
   have eq_card: (Finset.filter (fun s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset).card = (Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset).card :=
   by
     let tmp:= contraction_eq_card F x
     simp at tmp
     exact tmp.symm
-
-  rw [eq_card] at sumbij_result_int
 
   have nonneg: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset, (Int.ofNat x.card -1) >= 0 :=
   by
@@ -196,27 +182,131 @@ by
 
     exact Finset.sum_nonneg h_nonneg
 
+  --use implicitly
   have nonneg2: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset, ↑x.card >= (Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset).card :=
   by
     simp only [Finset.sum_sub_distrib] at nonneg
     simp at nonneg
     linarith
 
-  have :∑ x ∈ Finset.filter (fun s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, ↑ x.card +
-     ↑(Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset).card =
-  ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset, ↑x.card :=
+  have sumbij_result_int_combined :
+  ∑ x ∈ Finset.filter (λ s => F.sets s ∧ x ∈ s) F.ground.powerset, (↑x.card : Int) -
+    (Finset.filter (λ s => F.sets s ∧ x ∈ s) F.ground.powerset).card =
+  ∑ x ∈ Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, (↑x.card : Int) :=
   by
-    rw [←sumbij_result_int]
-    rw [Nat.sub_add_cancel nonneg2]
+  -- First, simplify the left-hand side to use sumbij_result_int
+    have sumbij_result_int : ∑ x ∈ Finset.filter (λ s => F.sets s ∧ x ∈ s) F.ground.powerset, (↑x.card) -
+          ↑(Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset).card =
+        ∑ x ∈ Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, (↑x.card) :=
+      by
+        simp_all only [Int.ofNat_eq_coe, Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, mul_one, Nat.cast_add,
+          Nat.cast_sum, sub_left_inj, add_sub_cancel_right]
+        simp_all only [add_tsub_cancel_right]
+    rw [eq_card] at sumbij_result_int
 
-  have this_int : ∑ x ∈ Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, (↑x.card : Int) +
-                  (↑(Finset.filter (λ s => F.sets s ∧ x ∈ s) F.ground.powerset).card : Int) =
-                  ∑ x ∈ Finset.filter (λ s => F.sets s ∧ x ∈ s) F.ground.powerset, (↑x.card : Int) :=
-    by
-      exact congr_arg (λ z => (↑z : Int)) (by exact_mod_cast this)
+    -- Apply congr_arg to lift sumbij_result_int to the final form
+    exact congr_arg (λ z => (↑z : Int)) (by exact_mod_cast sumbij_result_int)
 
-  rw [←this_int]
-  simp
+  rw [sumbij_result_int_combined]
   congr
+
+--essentially the same as the previous lemma, but with a different filter
+lemma sum_of_size_eq_degree_plus_contraction_sum (F : SetFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)
+  [DecidablePred (F.contraction x hx ground_ge_two).sets]:
+ (Finset.filter (λ s => F.sets s ∧ x ∈ s) (Finset.powerset F.ground)).sum Finset.card = F.degree x + (Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (Finset.powerset (F.ground.erase x))).sum Finset.card :=
+by
+  let previous := contraction_total_size F x hx ground_ge_two
+  dsimp [SetFamily.total_size_of_hyperedges] at previous
+  dsimp [SetFamily.contraction] at previous
+  simp at previous
+  simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
+  ring_nf at previous
+  symm
+  have :∑ x ∈ Finset.filter (fun s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, ↑x.card =
+  ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∈ s) F.ground.powerset, ↑x.card - F.degree x :=
+  by
+    convert previous
+  linarith
+
+lemma hyperedge_totalsize_deletion_contraction{α : Type} [DecidableEq α] [Fintype α]
+  (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2)
+  [DecidablePred F.sets] (singleton_have :F.sets {x}) :
+  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+    dsimp[SetFamily.deletion]
+    simp_all only [ge_iff_le]
+    infer_instance
+  haveI : DecidablePred (F.contraction x hx ground_ge_two).sets := by
+    dsimp [SetFamily.contraction]
+    infer_instance
+  F.total_size_of_hyperedges = (F.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.contraction x hx ground_ge_two).total_size_of_hyperedges +  F.degree x:=
+by
+  haveI : DecidablePred (F.contraction x hx ground_ge_two).sets := by
+    dsimp [SetFamily.contraction]
+    infer_instance
+  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+    dsimp [SetFamily.deletion]
+    infer_instance
+
+  have sub1 : {F with sets := λ s => F.sets s ∧ x ∈ s, inc_ground := λ s hs => F.inc_ground s (hs.1) }.total_size_of_hyperedges  =
+    (((Finset.filter (λ s => F.sets s ∧ x ∈ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))):Int) := by
+      dsimp [SetFamily.total_size_of_hyperedges]
+      simp_all only [ge_iff_le, Nat.cast_sum]
+
+  have sub2: { F with sets := λ s => F.sets s ∧ x ∉ s, inc_ground := λ s hs => F.inc_ground s (hs.1) }.total_size_of_hyperedges  =
+  (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s)) := by
+    dsimp [SetFamily.total_size_of_hyperedges]
+    simp_all only [ge_iff_le, Nat.cast_sum]
+
+
+  have sub3: (Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (Finset.powerset (F.ground.erase x))).sum  (λ s => Int.ofNat (Finset.card s)) =
+     (F.contraction x hx ground_ge_two).total_size_of_hyperedges  := by
+    dsimp [SetFamily.total_size_of_hyperedges]
+    dsimp [SetFamily.contraction]
+    simp
+    congr
+
+  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+    dsimp [SetFamily.deletion]
+    infer_instance
+  have sub4: (Finset.filter (λ s => F.sets s ∧ x  ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))= (F.deletion x hx ground_ge_two).total_size_of_hyperedges := by
+    dsimp [SetFamily.total_size_of_hyperedges]
+    dsimp [SetFamily.deletion]
+    simp
+    --goal ∑ s ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s) F.ground.powerset, ↑s.card = ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset, ↑x.card
+    let tmp:= filter_sum_eq_int F x
+    simp at tmp
+    rw [tmp]
+    congr
+
+  calc
+    F.total_size_of_hyperedges
+        = { F with sets := λ s => F.sets s ∧ x ∈ s, inc_ground := λ s hs => F.inc_ground s (hs.1) }.total_size_of_hyperedges +
+          { F with sets := λ s => F.sets s ∧ x ∉ s, inc_ground := λ s hs => F.inc_ground s (hs.1) }.total_size_of_hyperedges := by
+            rw [←(sum_partition_by_v F x)]
+      _  = (Finset.filter (λ s => F.sets s ∧ x ∈ s) (Finset.powerset F.ground)).sum Finset.card +
+          (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum Finset.card := by
+            rw [sub1]
+            rw [sub2]
+            simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
+      _  = F.degree x + (Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (Finset.powerset (F.ground.erase x))).sum Finset.card +
+          (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum Finset.card := by
+
+            rw [sum_of_size_eq_degree_plus_contraction_sum F x]
+      _  = F.degree x + (F.contraction x hx ground_ge_two).total_size_of_hyperedges
+              + (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum Finset.card := by
+            rw [←sub3]
+            simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
+      _  = F.degree x +  (F.contraction x hx ground_ge_two).total_size_of_hyperedges  +
+          (F.deletion x hx ground_ge_two).total_size_of_hyperedges  := by
+            rw [←sub4]
+            simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
+      _  = (F.deletion x hx ground_ge_two).total_size_of_hyperedges  +
+          (F.contraction x hx ground_ge_two).total_size_of_hyperedges  + F.degree x := by
+            ring_nf
+      _  = (F.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.contraction x hx ground_ge_two).total_size_of_hyperedges +  F.degree x := by
+            ring_nf
+
+  congr
+
 
 end Frankl

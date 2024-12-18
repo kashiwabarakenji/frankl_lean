@@ -139,6 +139,75 @@ lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filt
           rw [Finset.subset_sdiff] at a
           exact a.1.1
         · exact a.2
+
+lemma filter_sum_eq (F : SetFamily α) (x : α)  [DecidablePred F.sets] :
+  (Finset.filter (λ s => F.sets s ∧ x ∉ s) F.ground.powerset).sum Finset.card =
+  (Finset.filter (λ s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum Finset.card :=
+by
+  -- We aim to show that filtering `F.ground.powerset` vs. `(F.ground.erase x).powerset` with `x ∉ s`
+  -- and `F.sets s` yields sets whose sums of `Finset.card` are equal.
+
+  -- Use `Finset.sum_congr` followed by `Finset.ext` to reduce the problem to showing the filters define
+  -- the same subsets element-wise.
+  apply Finset.sum_congr
+  apply Finset.ext
+  intro s
+  simp only [Finset.mem_filter, Finset.mem_powerset]
+
+  -- We now prove a helper fact: if `x ∉ s`, then `s ⊆ F.ground` is equivalent to `s ⊆ F.ground.erase x`.
+  have lem : x ∉ s → (s ⊆ F.ground ↔ s ⊆ F.ground.erase x) := by
+    intro h
+    constructor
+    · -- (→) If s ⊆ F.ground and x ∉ s, then s also fits inside (F.ground.erase x)
+      intro a
+      intro y hy_in_s
+      by_cases h1 : y = x
+      · -- If y = x, this contradicts x ∉ s
+        rw [h1] at hy_in_s
+        contradiction
+      · -- Otherwise, y ≠ x, so y ∈ s implies y ∈ F.ground.erase x
+        simp_all only [Finset.mem_erase, ne_eq, not_false_eq_true, true_and]
+        exact a hy_in_s
+    · -- (←) If s ⊆ F.ground.erase x, then trivially s ⊆ F.ground since (F.ground.erase x) ⊆ F.ground
+      intro h2
+      exact h2.trans (Finset.erase_subset _ _)
+
+  simp_all only [and_congr_left_iff, not_false_eq_true,implies_true]--
+
+  intro x_1 _
+
+  simp only [Finset.mem_filter, Finset.mem_powerset]
+
+lemma filter_sum_eq_int (F : SetFamily α) (x : α)  [DecidablePred F.sets] :
+  (Finset.filter (fun s => F.sets s ∧ x ∉ s) F.ground.powerset).sum (fun (s: Finset α) => Int.ofNat s.card) = (Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum (fun (s: Finset α) => Int.ofNat s.card):=
+by
+  have h := filter_sum_eq F x
+  apply Finset.sum_congr
+  ext s
+  simp_all only [Finset.mem_filter, Finset.mem_powerset]
+  apply Iff.intro
+  · intro a
+    simp_all only [true_and]
+    simp_all only [not_false_eq_true, and_true]
+    obtain ⟨left, right⟩ := a
+    obtain ⟨_, right⟩ := right
+    intro y hy
+    simp_all only [Finset.mem_erase, ne_eq]
+    apply And.intro
+    · apply Aesop.BuiltinRules.not_intro
+      intro a
+      subst a
+      simp_all only
+    · exact left hy
+  · intro a
+    simp_all only [not_false_eq_true, and_self, and_true]
+    obtain ⟨left, right⟩ := a
+    obtain ⟨left_1, right⟩ := right
+    rw [Finset.subset_erase] at left
+    exact left.1
+  intro x_1 _
+  simp_all only [Finset.mem_filter, Finset.mem_powerset, Int.ofNat_eq_coe]
+
 ---------------------------------------------------
 theorem fintype_card_eq_of_bijective {α β : Type*}
   [Fintype α] [Fintype β][DecidableEq β] (f : α → β) (h : Function.Bijective f) :
