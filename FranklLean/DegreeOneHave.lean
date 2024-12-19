@@ -154,7 +154,7 @@ lemma total_degone_card {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily
   have card_sum: (Finset.filter (λ s => F.sets s) (F.ground.powerset)).sum Finset.card = (Finset.filter (λ s => F.sets s ∧ v ∉ s ) (F.ground.powerset)).sum Finset.card + F.ground.card := by
     simp_all only [ge_iff_le, Finset.disjoint_singleton_right]
     symm
-    rw [← union_lem, Finset.sum_union]
+    rw [← union_lem, Finset.sum_union]--
     · rw [Finset.sum_singleton]
     · simp_all only [Finset.disjoint_singleton_right, Finset.mem_filter, Finset.mem_powerset, not_true_eq_false, and_false, not_false_eq_true]--
 
