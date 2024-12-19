@@ -403,6 +403,7 @@ by
     constructor
     · exact h
 
+--ideal_deletion_haveuvを使ってない。
 lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
   [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
   (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges :=
@@ -412,7 +413,28 @@ lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground)
     dsimp [IdealFamily.number_of_hyperedges]
     dsimp [SetFamily.number_of_hyperedges]
     simp_all only [Nat.cast_inj]
-    sorry
+    congr
+    --funext X
+    ext X
+    apply Iff.intro
+    intro a
+    cases a with
+    | inl h => simp_all only [not_false_eq_true, and_self]
+    | inr h_1 =>
+      subst h_1
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true]
+      convert h_uv_have
+      ext1 a
+      simp_all only [Finset.mem_erase, ne_eq, Finset.mem_sdiff, Finset.mem_singleton]
+      apply Iff.intro
+      · intro a_1
+        simp_all only [not_false_eq_true, and_self]
+      · intro a_1
+        simp_all only [not_false_eq_true, and_self]
+
+    intro a
+    simp_all only [not_false_eq_true, and_self, true_or]
+
 
 lemma ideal_deletion_haveuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
   [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
