@@ -219,3 +219,59 @@ by
     cases a_2 with
     | inl h => simp_all only [or_false, and_self]
     | inr h_1 => simp_all only [or_true, and_self]
+
+lemma add_compl {α : Type} [DecidableEq α] (X : Finset α) (P Q : α → Prop) [DecidablePred P] [DecidablePred Q] :
+  (Finset.filter P X).card =
+    (Finset.filter (λ s => P s ∧ Q s) X).card +
+    (Finset.filter (λ s => P s ∧ ¬Q s) X).card :=
+by
+  -- `Finset.filter` の性質を使って等式を示す
+  have h_disjoint : Disjoint
+      (Finset.filter (λ s => P s ∧ Q s) X)
+      (Finset.filter (λ s => P s ∧ ¬Q s) X) := by
+    -- 互いに重ならないことを示す
+    apply Finset.disjoint_filter.mpr
+    intro s
+    simp only [and_imp, not_and, not_not]
+    intro _ _ h_not_Q
+    intro _
+    simp_all only
+
+  -- `filter P X` を `filter (P ∧ Q)` と `filter (P ∧ ¬Q)` に分割
+  have h_union :
+    Finset.filter P X =
+      Finset.filter (λ s => P s ∧ Q s) X ∪ Finset.filter (λ s => P s ∧ ¬Q s) X := by
+    -- `filter` の性質で示す
+    ext s
+    simp only [Finset.mem_filter, Finset.mem_union]
+    constructor
+    · -- 左から右
+      intro hP
+      by_cases Q s
+      · left; simp_all only [and_self]
+      · right; simp_all only [not_false_eq_true, and_self]
+    · -- 右から左
+      intro hPQ
+      cases hPQ with
+      | inl h => simp_all only [and_self]
+      | inr h => simp_all only [and_self]
+
+  -- カード数に関する性質を利用
+  rw [h_union]
+  rw [Finset.card_union_of_disjoint]
+  exact h_disjoint
+
+
+lemma card_one (X : Finset α):(Finset.filter (λ (s:Finset α) => s = X) (X.powerset))= {X} :=
+by
+  ext s
+  simp only [Finset.mem_filter, Finset.mem_singleton, Finset.mem_powerset]
+  constructor
+  · -- s がフィルタリングされた集合に含まれる場合
+    intro h
+    simp_all only [Finset.mem_filter, Finset.mem_powerset]
+  · -- s = F.ground.erase x であれば、フィルタリングされた集合に含まれる
+    intro h_eq
+    rw [h_eq]
+    subst h_eq
+    simp_all only [Finset.mem_filter, Finset.mem_powerset, subset_refl, and_self]
