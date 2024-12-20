@@ -572,6 +572,25 @@ by
     simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
       or_true, implies_true, P, Q]
 
+  have eqn2 : ∀ s, (P s ∧ ¬ Q s) ↔ (F.sets s ∧ ¬ x ∈ s) := by
+    intro s
+    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+      or_true, implies_true, P, Q]
+    apply Iff.intro
+    · intro a
+      cases a.1 with
+      | inl h => simp_all only [not_false_eq_true, and_self, true_or, true_and]
+      | inr h =>
+      subst h
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true, and_false]
+    · intro a
+      constructor
+      · simp_all only [not_false_eq_true, and_self, true_or]
+      · intro h_eq
+        rw [h_eq] at a
+        rw [Finset.erase_eq] at a
+        exact h_uv_none a.1
+
   haveI : DecidablePred (λ s => P s ∧ Q s) := by
     intro s
     exact And.decidable
@@ -587,9 +606,8 @@ by
         intro s
         exact And.decidable
       simp_all
-      dsimp [P,Q]
-      sorry
-
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true, P, Q]
+      congr
 
   have :  (Finset.filter (fun s => (s = F.ground.erase x)) (F.ground.erase x).powerset).sum Finset.card = F.ground.card - 1 := by
     have lem: (F.ground \ {x}).card = F.ground.card - 1 := by
@@ -600,6 +618,7 @@ by
       · simp_all only [Finset.singleton_subset_iff]
     rw [←lem]
     rw [←Finset.erase_eq]
+
     let co_sum:=  sum_one (F.ground.erase x) (λ s => s.card)
     --rw [Finset.sum_singleton]
     calc
@@ -618,6 +637,7 @@ by
 
   ring_nf
   norm_cast
+  convert left_hand'
   --convert left_hand'
   sorry
 
