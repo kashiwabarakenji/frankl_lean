@@ -540,7 +540,7 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
     norm_cast
     convert left_hand'
 
-lemma ideal_deletion_noneuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
   [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
   (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
 by
@@ -548,9 +548,79 @@ by
   dsimp [SetFamily.deletion]
   dsimp [IdealFamily.total_size_of_hyperedges]
   dsimp [SetFamily.total_size_of_hyperedges]
+  --simp_all only [Nat.cast_inj]
+  let P (s:Finset α) := (F.sets s ∧ ¬ x ∈ s) ∨ s = F.ground.erase x
+  haveI : DecidablePred P := by
+    rename_i inst_2 inst_3
+    simp_all only [P]
+    exact inst_2
+  let Q (s:Finset α) := s = F.ground.erase x
+  haveI : DecidablePred Q := by
+    rename_i inst_2 inst_3
+    simp_all only [Q]
+    infer_instance
+  have left_hand: ((Finset.filter (fun s => P s) (F.ground.erase x).powerset).sum Finset.card) = (Finset.filter (λ s => P s ∧ Q s) (F.ground.erase x).powerset).sum Finset.card + (Finset.filter (λ s => P s ∧ ¬ Q s) (F.ground.erase x).powerset).sum Finset.card  :=
+  by
+    exact add_compl_sum (F.ground.erase x).powerset (λ s => P s) (λ s => Q s)  (λ s => s.card)
+
+  have eqn1: ∀ s, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
+    intro s
+    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+      or_true, implies_true, P, Q]
+  have eqn1': ∀ s ∈ (F.ground.erase x).powerset, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
+    intro s
+    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+      or_true, implies_true, P, Q]
+
+  haveI : DecidablePred (λ s => P s ∧ Q s) := by
+    intro s
+    exact And.decidable
+
+  haveI : DecidablePred (λ s => P s ∧ ¬ Q s) := by
+    intro s
+    exact And.decidable
+
+  have left_hand': (Finset.filter (fun s => F.sets s ∧ x ∉ s ∨ s = F.ground.erase x) (F.ground.erase x).powerset).sum Finset.card =
+    (Finset.filter (fun s => (s = F.ground.erase x) )  (F.ground.erase x).powerset).sum Finset.card +
+    (Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum Finset.card := by
+      haveI : DecidablePred (fun s => F.sets s ∧ x ∉ s) := by
+        intro s
+        exact And.decidable
+      simp_all
+      dsimp [P,Q]
+      sorry
+
+
+  have :  (Finset.filter (fun s => (s = F.ground.erase x)) (F.ground.erase x).powerset).sum Finset.card = F.ground.card - 1 := by
+    have lem: (F.ground \ {x}).card = F.ground.card - 1 := by
+      simp_all only [add_right_inj, and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true,
+        not_false_eq_true, or_true, implies_true, Finset.mem_powerset, P, Q]
+      rw [Finset.card_sdiff]
+      · simp_all only [Finset.card_singleton]
+      · simp_all only [Finset.singleton_subset_iff]
+    rw [←lem]
+    rw [←Finset.erase_eq]
+    let co_sum:=  sum_one (F.ground.erase x) (λ s => s.card)
+    --rw [Finset.sum_singleton]
+    calc
+    (Finset.filter (fun s => s = F.ground.erase x) (F.ground.erase x).powerset).sum Finset.card
+      = (Finset.filter (fun s => s = F.ground.erase x) (F.ground.erase x).powerset).sum (λ s => s.card) := by simp_all only [add_right_inj,
+        and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true,
+        implies_true, Finset.mem_powerset, P, Q]
+   _  = (Finset.filter (λ s => s = F.ground.erase x) (F.ground.erase x).powerset).sum (λ s => s.card) := by simp_all only [Finset.sum_filter]
+   _  = Finset.sum {F.ground.erase x} (λ s => s.card) := by convert co_sum
+   _  = Finset.card (F.ground.erase x) := by simp_all only [add_right_inj, and_iff_right_iff_imp, Finset.mem_erase,
+     ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true, implies_true, Finset.mem_powerset,
+     Finset.sum_singleton, Finset.card_erase_of_mem, P, Q]
+
+
+  rw [this] at left_hand'
+
+  ring_nf
+  norm_cast
+  --convert left_hand'
   sorry
 
-----------------------------
 lemma ground_deletion_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (IdealFamily.deletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
   by
