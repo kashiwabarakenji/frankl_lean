@@ -10,6 +10,8 @@ import FranklLean.FamilyLemma
 import FranklLean.DegreeOneHave
 import LeanCopilot
 
+set_option maxHeartbeats 1000000
+
 namespace Frankl
 
 variable {α : Type} [DecidableEq α][Fintype α]
@@ -18,11 +20,11 @@ lemma number_nds_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F
   [DecidablePred (F.toSetFamily.deletion v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
 F.number_of_hyperedges = (F.toSetFamily.deletion v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
 by
-  dsimp [IdealFamily.number_of_hyperedges]
+  dsimp [SetFamily.number_of_hyperedges]
   rw [family_union_card F.toSetFamily v]
   rw [add_comm]
   have left_hand:  (Finset.filter (fun s => F.sets s ∧ v ∉ s) F.ground.powerset).card = (Finset.filter (fun s => (F.toSetFamily.deletion v vin geq2).sets s) (F.deletion v vin geq2).ground.powerset).card := by
-    rw [ground_deletion F v vin geq2]
+    rw [ground_deletion_ideal F v vin geq2]
     dsimp [SetFamily.deletion]
     rw [number_ground F.toSetFamily v]
     congr
@@ -308,8 +310,14 @@ by
 
   congr
 
+lemma eqn (Dtotal Ctotal Dnum Cnum degree ground_card : ℤ):
+    Dtotal*2 + Ctotal * 2 + degree * 2 + (-(Dnum * ground_card) - Cnum * ground_card )
+    = Dtotal * 2 + (Ctotal * 2 - Dnum * ground_card) + (- Cnum - ground_card * Cnum) + Cnum + degree * 2 :=
+by
+  ring_nf
+
 theorem nonpositive_nds_haveUV (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
-  [DecidablePred F.sets] (hx_hyperedge : F.sets (F.ground \ {x})) (hs : F.sets {x})
+  [DecidablePred F.sets] (hs : F.sets {x})--(hx_hyperedge : F.sets (F.ground \ {x}))
    --[DecidablePred (F.toSetFamily.deletion x hx geq2).sets] [DecidablePred (F.toSetFamily.contraction x hx geq2).sets]
    :
   F.toSetFamily.normalized_degree_sum =
@@ -322,11 +330,25 @@ by
     dsimp [IdealFamily.contraction]
     infer_instance
   have number := number_nds_have F x geq2 hx hs
-
   have total := hyperedge_totalsize_deletion_contraction F.toSetFamily x hx geq2 hs
+  rw [total]
+  rw [number]
 
-  --ここに帰納法の過程を入れるのか。
-
-
+  rw [←number_eq_card]
+  rw [ground_contraction_card]
+  rw [ground_deletion_card F.toSetFamily x hx geq2]
+  --rw [set_ideal_contraction_num]
+  clear total number
+  ring_nf
+  have eqn_lemma := eqn
+    (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges
+    (F.toSetFamily.contraction x hx geq2).total_size_of_hyperedges
+    (F.toSetFamily.deletion x hx geq2).number_of_hyperedges
+    (F.toSetFamily.contraction x hx geq2).number_of_hyperedges
+    (F.degree x)
+    (F.ground.card:Int)
+  --rw [ideal_deletion_haveuv_total F x hx geq2 hx_hyperedge]
+  --rw [ideal_deletion_haveuv_num F x hx geq2 hx_hyperedge]
+  convert eqn_lemma
 
 end Frankl

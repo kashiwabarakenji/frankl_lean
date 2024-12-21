@@ -419,7 +419,7 @@ by
     simp_all only [eq_iff_iff, iff_true, Bool.and_eq_true, decide_eq_true_eq]
 
   have h_family_size : hyperedges_with_v.card + hyperedges_without_v.card = F.number_of_hyperedges := by
-    unfold IdealFamily.number_of_hyperedges
+    unfold SetFamily.number_of_hyperedges
     let tmp := card_filter_add_card_filter_compl F.toSetFamily v
     simp_all
     linarith

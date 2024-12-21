@@ -41,7 +41,7 @@ noncomputable def SetFamily.normalized_degree {α : Type} [DecidableEq α] [Fint
   2 * (F.degree x:Int) - (F.number_of_hyperedges:Int)
 
 noncomputable def SetFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets]: ℤ :=
-  2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card)
+  2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card:Int)
 
 /-
 noncomputable instance (α : Type) [DecidableEq α] [Fintype α] : Family (SetFamily α) α where
@@ -63,17 +63,17 @@ structure IdealFamily  (α : Type) [DecidableEq α] [Fintype α] extends SetFami
 
 noncomputable def IdealFamily.degree (F : IdealFamily α)[DecidablePred F.sets]: α → Int := λ v => Int.ofNat (Finset.filter (λ s => F.sets s ∧ v ∈ s) F.ground.powerset).card  -- degreeを計算する関数を持つとする
 
-noncomputable def IdealFamily.number_of_hyperedges (F : IdealFamily α) [DecidablePred F.sets]: Int :=
-  Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s ) (F.ground.powerset)))
+--noncomputable def IdealFamily.number_of_hyperedges (F : IdealFamily α) [DecidablePred F.sets]: Int :=
+--  Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s ) (F.ground.powerset)))
 
-noncomputable def IdealFamily.total_size_of_hyperedges (F : IdealFamily α)  [DecidablePred F.sets] : Int :=
- Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)
+--noncomputable def IdealFamily.total_size_of_hyperedges (F : IdealFamily α)  [DecidablePred F.sets] : Int :=
+-- Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)
 
-noncomputable def IdealFamily.normalized_degree {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) [DecidablePred F.sets] (x: α): ℤ :=
-  2 * (F.degree x:Int) - (F.number_of_hyperedges:Int)
+--noncomputable def IdealFamily.normalized_degree {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) [DecidablePred F.sets] (x: α): ℤ :=
+--  2 * (F.degree x:Int) - (F.number_of_hyperedges:Int)
 
-noncomputable def IdealFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) [DecidablePred F.sets]: ℤ :=
-  2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card)
+--noncomputable def IdealFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α) [DecidablePred F.sets]: ℤ :=
+--  2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card:Int)
 
 -- A predicate to check if a SetFamily is an IdealFamily
 def isIdealFamily (α : Type) [DecidableEq α] [Fintype α] (F: SetFamily α) : Prop :=

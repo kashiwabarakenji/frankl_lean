@@ -203,7 +203,7 @@ lemma ground_minus_v_ideal_sets {α : Type} [DecidableEq α] [Fintype α] (F : I
 
 lemma ground_minus_v_ideal_number {α : Type} [DecidableEq α] [Fintype α] (F : IdealFamily α)[DecidablePred F.sets] (v : α) (hv: v ∈ F.ground)  (hv_hyperedge:F.sets (F.ground \ {v}))(hv_singleton:  ¬F.sets {v}):
     F.number_of_hyperedges = 2^(F.ground.card - 1) + 1 := by
-  rw [IdealFamily.number_of_hyperedges]
+  rw [SetFamily.number_of_hyperedges]
 
   let A := Finset.filter (λ s=> v ∉ s) F.ground.powerset
   let B : Finset (Finset α) := {F.ground}
@@ -679,7 +679,7 @@ lemma degree_one_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_
 by
   have total := ground_minus_v_ideal_total F v v_in_ground h_uv_have singleton_hyperedge_none geq2
   have number := ground_minus_v_ideal_number F v v_in_ground h_uv_have singleton_hyperedge_none
-  dsimp [IdealFamily.normalized_degree_sum]
+  dsimp [SetFamily.normalized_degree_sum]
   rw [total, number]
   -- Using `simp_all` to simplify. Without it, an error occurs.
   simp_all

@@ -339,7 +339,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
         exact Or.inr h
 
     have F_hand: F.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter Q F.ground.powerset).card:= by
-      rw [IdealFamily.number_of_hyperedges]
+      rw [SetFamily.number_of_hyperedges]
       let result := pq_transform F v v_in_ground geq2 degone
       rw [Finset.filter_congr result]
       let result2 := filter_num F.ground.powerset contradictPQ
@@ -421,7 +421,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
 -/
 
     have FDel_hand: IdealDel.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter R F.ground.powerset).card := by
-      rw [IdealFamily.number_of_hyperedges]
+      rw [SetFamily.number_of_hyperedges]
       dsimp [IdealDel]
       rw [h_ground]
       rw [Finset.filter_congr FidealDelSets]
@@ -499,10 +499,10 @@ by
     linarith
 
   let ihnds := ih IdealDel h_ground_card
-  dsimp [IdealFamily.normalized_degree_sum] at ihnds
+  dsimp [SetFamily.normalized_degree_sum] at ihnds
   have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2 (by linarith [h_card]) (by linarith [ihnds]) rfl
 
-  simp [IdealFamily.normalized_degree_sum]
+  simp [SetFamily.normalized_degree_sum]
 
   have number := number_lem F v v_in_ground geq2 singleton_none h_uv_not
 
@@ -513,7 +513,7 @@ by
     let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not geq2 h_card
     dsimp [IdealDel]
     dsimp [IdealFamily.deletion]
-    dsimp [IdealFamily.total_size_of_hyperedges]
+    dsimp [SetFamily.total_size_of_hyperedges]
     have left_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground) F.ground.powerset, x.card = ↑((Finset.filter F.sets F.ground.powerset).sum Finset.card) :=
     by
       let tmp:= pq_transform F v v_in_ground geq2 degone

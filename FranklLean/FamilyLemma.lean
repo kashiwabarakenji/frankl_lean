@@ -15,7 +15,7 @@ variable {α : Type} [DecidableEq α][Fintype α]
 lemma setfamily_hyperedges_geq2 (F : IdealFamily α) [DecidablePred F.sets] :
   F.number_of_hyperedges >= 2 :=
 by
-  dsimp [IdealFamily.number_of_hyperedges]
+  dsimp [SetFamily.number_of_hyperedges]
   have h_mem: {∅,F.ground} ⊆ Finset.filter (λ s => F.sets s) F.ground.powerset := by
     simp [Finset.subset_iff]
     apply And.intro
@@ -39,7 +39,7 @@ by
 lemma setfamily_hyperedges_total (F : IdealFamily α) [DecidablePred F.sets] :
   F.total_size_of_hyperedges >= 1 :=
 by
-  dsimp [IdealFamily.total_size_of_hyperedges]
+  dsimp [SetFamily.total_size_of_hyperedges]
   have h_mem: {F.ground} ⊆ Finset.filter (λ s => F.sets s) F.ground.powerset := by
     simp [Finset.subset_iff]
     exact F.has_ground
@@ -455,5 +455,15 @@ by
 
   -- Combine everything
   simp_all only [Int.ofNat_eq_coe, Nat.cast_sum, Nat.cast_add, Fsets, Fv, Fnv]
+
+lemma number_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
+  F.number_of_hyperedges = F.toSetFamily.number_of_hyperedges :=
+by
+    rfl
+
+lemma total_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
+  F.total_size_of_hyperedges = F.toSetFamily.total_size_of_hyperedges :=
+by
+    rfl
 
 end Frankl

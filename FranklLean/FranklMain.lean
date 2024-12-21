@@ -32,7 +32,7 @@ by
     simp_all only [Finset.card_singleton, Finset.mem_singleton]
     rfl
   have total: F.total_size_of_hyperedges = 1:= by
-    dsimp [IdealFamily.total_size_of_hyperedges]
+    dsimp [SetFamily.total_size_of_hyperedges]
     rw [h'']
     simp
     rw [Finset.filter_true_of_mem]
@@ -47,7 +47,7 @@ by
       subst h_1
       simp_all only
   have h''' : F.number_of_hyperedges = 2:= by
-    dsimp [IdealFamily.number_of_hyperedges]
+    dsimp [SetFamily.number_of_hyperedges]
     rw [h'']
     rw [Finset.filter_true_of_mem]
     congr
@@ -61,7 +61,7 @@ by
       subst h_1
       simp_all only
   have h'''' : F.normalized_degree_sum = 0:= by
-    dsimp [IdealFamily.normalized_degree_sum]
+    dsimp [SetFamily.normalized_degree_sum]
     rw [total]
     rw [h''']
     simp

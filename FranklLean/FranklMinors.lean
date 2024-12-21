@@ -347,16 +347,16 @@ lemma set_ideal_contraction_num  (F : IdealFamily α) (x : α) (hs: F.sets {x})(
   (F.contraction x hs ground_ge_two).number_of_hyperedges = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).number_of_hyperedges :=
   by
     dsimp [IdealFamily.contraction]
-    dsimp [SetFamily.contraction]
-    rfl
+    --dsimp [SetFamily.contraction]
+    --rfl
 
 lemma set_ideal_contraction_total (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2)
   [DecidablePred (F.contraction x hs ground_ge_two).sets]:
   (F.contraction x hs ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).total_size_of_hyperedges :=
   by
     dsimp [IdealFamily.contraction]
-    dsimp [SetFamily.contraction]
-    rfl
+    --dsimp [SetFamily.contraction]
+    --rfl
 
 
 lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x}))) :
@@ -410,7 +410,7 @@ lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground)
   by
     dsimp [IdealFamily.deletion]
     dsimp [SetFamily.deletion]
-    dsimp [IdealFamily.number_of_hyperedges]
+    --dsimp [IdealFamily.number_of_hyperedges]
     dsimp [SetFamily.number_of_hyperedges]
     simp_all only [Nat.cast_inj]
     congr
@@ -441,7 +441,7 @@ lemma ideal_deletion_haveuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.groun
 by
   dsimp [IdealFamily.deletion]
   dsimp [SetFamily.deletion]
-  dsimp [IdealFamily.total_size_of_hyperedges]
+  --dsimp [IdealFamily.total_size_of_hyperedges]
   dsimp [SetFamily.total_size_of_hyperedges]
   simp_all only [Nat.cast_inj]
   congr
@@ -471,7 +471,7 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
   by
     dsimp [IdealFamily.deletion]
     dsimp [SetFamily.deletion]
-    dsimp [IdealFamily.number_of_hyperedges]
+    --dsimp [IdealFamily.number_of_hyperedges]
     dsimp [SetFamily.number_of_hyperedges]
     --simp_all only [Nat.cast_inj]
     let P (s:Finset α) := (F.sets s ∧ ¬ x ∈ s) ∨ s = F.ground.erase x
@@ -490,18 +490,15 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
       exact add_compl (F.ground.erase x).powerset (λ s => P s) (λ s => Q s)
     have eqn1: ∀ s, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
       intro s
-      simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-        or_true, implies_true, P, Q]
+      simp_all only [and_iff_right_iff_imp,  or_true, implies_true, P, Q]
 
     have eqn1': ∀ s ∈ (F.ground.erase x).powerset, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
       intro s
-      simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-        or_true, implies_true, P, Q]
+      simp_all only [implies_true, P, Q]
 
     have eqn2 : ∀ s, (P s ∧ ¬ Q s) ↔ (F.sets s ∧ ¬ x ∈ s) := by
       intro s
-      simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-        or_true, implies_true, P, Q]
+      simp_all only [P, Q]
       apply Iff.intro
       · intro a
         cases a.1 with
@@ -540,13 +537,13 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
     norm_cast
     convert left_hand'
 
-lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
   [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
   (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
 by
   dsimp [IdealFamily.deletion]
   dsimp [SetFamily.deletion]
-  dsimp [IdealFamily.total_size_of_hyperedges]
+  --dsimp [IdealFamily.total_size_of_hyperedges]
   dsimp [SetFamily.total_size_of_hyperedges]
   --simp_all only [Nat.cast_inj]
   let P (s:Finset α) := (F.sets s ∧ ¬ x ∈ s) ∨ s = F.ground.erase x
@@ -565,24 +562,21 @@ by
 
   have eqn1: ∀ s, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
     intro s
-    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-      or_true, implies_true, P, Q]
+    simp_all only [and_iff_right_iff_imp, or_true, implies_true, P]
   have eqn1': ∀ s ∈ (F.ground.erase x).powerset, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
     intro s
-    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-      or_true, implies_true, P, Q]
+    simp_all only [not_false_eq_true,or_true, implies_true, P, Q]
 
   have eqn2 : ∀ s, (P s ∧ ¬ Q s) ↔ (F.sets s ∧ ¬ x ∈ s) := by
     intro s
-    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
-      or_true, implies_true, P, Q]
+    simp_all only [  not_false_eq_true, or_true, implies_true, P, Q]
     apply Iff.intro
     · intro a
       cases a.1 with
       | inl h => simp_all only [not_false_eq_true, and_self, true_or, true_and]
       | inr h =>
       subst h
-      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true, and_false]
+      simp_all only [ not_true_eq_false, and_true, not_false_eq_true, or_true, and_false]
     · intro a
       constructor
       · simp_all only [not_false_eq_true, and_self, true_or]
@@ -628,26 +622,48 @@ by
         implies_true, Finset.mem_powerset, P, Q]
    _  = (Finset.filter (λ s => s = F.ground.erase x) (F.ground.erase x).powerset).sum (λ s => s.card) := by simp_all only [Finset.sum_filter]
    _  = Finset.sum {F.ground.erase x} (λ s => s.card) := by convert co_sum
-   _  = Finset.card (F.ground.erase x) := by simp_all only [add_right_inj, and_iff_right_iff_imp, Finset.mem_erase,
-     ne_eq, not_true_eq_false, and_true, not_false_eq_true, or_true, implies_true, Finset.mem_powerset,
-     Finset.sum_singleton, Finset.card_erase_of_mem, P, Q]
-
+   _  = Finset.card (F.ground.erase x) := by simp_all only [Finset.sum_singleton, Finset.card_erase_of_mem, P, Q]
 
   rw [this] at left_hand'
 
-  ring_nf
-  norm_cast
-  convert left_hand'
-  --convert left_hand'
-  sorry
+  have : Int.ofNat (F.ground.card - 1)= (F.ground.card : ℤ) - 1 := by
+      simp
+      omega
 
-lemma ground_deletion_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (IdealFamily.deletion F x hx ground_ge_two).ground.card = F.ground.card - 1 :=
+  have h_cast : ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s ∨ s = F.ground.erase x) (F.ground.erase x).powerset, ↑x.card =
+  -1 + (F.ground.card : ℤ) + ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset, (x.card : ℤ) :=
+  by
+    simp_all only [Int.ofNat_eq_coe]
+    norm_cast
+    rw [left_hand']
+    simp_all only [Nat.cast_add]
+    rfl
+
+  rw [Int.add_comm]
+  norm_cast
+  simp_all
+  convert h_cast
+
+lemma ground_deletion_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (SetFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
+  by
+    rw [SetFamily.deletion]
+    rw [Finset.card_erase_of_mem hx]
+    simp_all only [ge_iff_le, Int.ofNat_eq_coe]
+    rw [Nat.cast_sub]
+    · simp_all only [Nat.cast_one]
+    · simp_all only [Finset.one_le_card]
+      use x
+
+lemma ground_deletion_ideal_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (IdealFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat  F.ground.card - 1 :=
   by
     rw [IdealFamily.deletion]
     rw [Finset.card_erase_of_mem hx]
+    simp_all only [ge_iff_le, Int.ofNat_eq_coe]
+    omega
 
-lemma ground_deletion  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+lemma ground_deletion_ideal  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (IdealFamily.deletion F x hx ground_ge_two).ground = F.ground \ {x} :=
 by
   rw [IdealFamily.deletion]
@@ -662,10 +678,15 @@ by
     simp_all only [not_false_eq_true, and_self]
 
 lemma ground_contraction_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (SetFamily.contraction F.toSetFamily x hx ground_ge_two).ground.card = F.ground.card - 1 :=
+  (SetFamily.contraction F.toSetFamily x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
     rw [SetFamily.contraction]
     rw [Finset.card_erase_of_mem hx]
+    simp_all only [ge_iff_le, Int.ofNat_eq_coe]
+    rw [Nat.cast_sub]
+    · simp_all only [Nat.cast_one]
+    · simp_all only [Finset.one_le_card]
+      use x
 
 lemma ground_contraction  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.contraction F x hx ground_ge_two).ground = F.ground \ {x} :=
@@ -691,7 +712,7 @@ by
   rw [Finset.erase_eq]
 
 lemma ground_contraction_ideal_card  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
-  (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = F.ground.card - 1 :=
+  (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
     rw [IdealFamily.contraction]
     rw [ground_contraction_card]
