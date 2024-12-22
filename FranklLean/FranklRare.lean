@@ -62,7 +62,7 @@ by
   simp_all only [  ne_eq,  Bool.and_eq_true, decide_eq_true_eq,not_false_eq_true]--
 
   constructor
-  · simp_all only [ Bool.and_eq_true, decide_eq_true_eq,  Finset.mem_filter,  elements]
+  · simp_all only [ Bool.and_eq_true, decide_eq_true_eq,  Finset.mem_filter,  elements]--
 
   · intros A hA hHA
     by_cases Aeq : A = F.ground
@@ -177,7 +177,7 @@ by
           have h_map3: G ⊂ H1.1 := by
             rw [Finset.ssubset_iff_subset_ne]
             subst h_map
-            simp_all only [ ne_eq, not_false_eq_true, Finset.erase_eq_self, Decidable.not_not]
+            simp_all only [ ne_eq, Finset.erase_eq_self, Decidable.not_not]
             obtain ⟨val, property⟩ := H1
             obtain ⟨val_1, property_1⟩ := H2
             simp_all only [and_true]
@@ -218,7 +218,7 @@ by
     by
       rw [Finset.disjoint_left]
       intro a a_1 a_2
-      simp_all only [Finset.mem_filter,  not_true_eq_false, and_false, with_v, without_v]
+      simp_all only [Finset.mem_filter,  not_true_eq_false,  with_v, without_v]--
   have h_union : with_v ∪ without_v = all :=
     by
       ext H
@@ -233,8 +233,7 @@ by
       · intro h
         simp at h
         by_cases hv : v ∈ H
-        simp_all only [Finset.mem_filter,  and_self, not_true_eq_false, and_false, or_false, with_v,
-          without_v, all]
+        simp_all only [Finset.mem_filter,  and_self, not_true_eq_false, and_false, or_false, with_v, without_v, all]--
 
         simp_all only [Finset.mem_filter,  not_false_eq_true, and_self, or_true, without_v, all]
   have h_card_union : (with_v ∪ without_v).card = with_v.card + without_v.card := Finset.card_union_of_disjoint h_disjoint
@@ -258,8 +257,6 @@ by
     by
       simp_all only [eq_iff_iff, iff_true, with_v,all]
       dsimp [SetFamily.degree]
-      --rw [Finset.card_filter]
-      --simp_all only [Finset.sum_boole, Nat.cast_id, eq_iff_iff, iff_true, without_v]
 
   have h_card_all : all.card = F.number_of_hyperedges:=
     by
@@ -340,7 +337,7 @@ by
           case neg =>
             unfold map_hyperedge
             rw [if_neg H_eq_ground]
-            simp_all only [ Finset.mem_erase, ne_eq, not_true_eq_false, false_and, not_false_eq_true]
+            simp_all only [ Finset.mem_erase, ne_eq, not_true_eq_false, false_and, not_false_eq_true]--
         exact this
 
   let ff : {H // F.sets H ∧ v ∈ H} → hyperedges_without_v := λ H => ⟨map_hyperedge F v G H.1, map_range_in H⟩
@@ -366,8 +363,7 @@ by
     rw [hyperedge_with_v]
     dsimp [IdealFamily.degree]
     simp_all only [ Bool.and_eq_true, decide_eq_true_eq]
-    simp_all only [ne_eq, eq_iff_iff, iff_true, Bool.and_eq_true, decide_eq_true_eq, decide_not, Bool.not_eq_true',
-      decide_eq_false_iff_not, hyperedges_with_v, hyperedges_without_v, f, ff]
+    simp_all only [eq_iff_iff, iff_true]--
   have h_size_ineq: hyperedges_with_v.card <= hyperedges_without_v.card := by
     let tmp := Fintype.card_le_of_injective ff ff_inj
     have cardsub1 :hyperedges_with_v = { H // F.sets H ∧ v ∈ H } := by
@@ -417,7 +413,7 @@ by
         constructor
         · exact F.inc_ground x h.1
         · tauto
-    simp_all only [eq_iff_iff, iff_true, Bool.and_eq_true, decide_eq_true_eq]
+    simp_all only [decide_eq_true_eq]
 
   have h_family_size : hyperedges_with_v.card + hyperedges_without_v.card = F.number_of_hyperedges := by
     unfold SetFamily.number_of_hyperedges
@@ -433,101 +429,3 @@ by
   exact ⟨v, v_in_ground, h_degree_le_size⟩
 
 end Frankl
-
-
-/- `x` is not in `map_hyperedge sf x G H` by construction.
-lemma map_hyperedge_excludes_x [Fintype α] (sf : IdealFamily α) (x : α) (G : Finset α) (H : Finset α) :
-  sf.sets H → x ∉ G → x ∈ H → x ∉ map_hyperedge sf x G H :=
-by
-  intros _ hxG _
-  unfold map_hyperedge
-  by_cases H_eq_univ : H = sf.ground
-  { rw [if_pos H_eq_univ]; simp [hxG] }
-  { rw [if_neg H_eq_univ]; simp }
--/
-
-/- If `G` is a maximal hyperedge, then adding a new element `x` not in `G`
-    either does not produce a hyperedge or produces the ground set.
-lemma G_union_x_hyperedge_or_univ [Fintype α] (sf : IdealFamily α) (x : α) (G : Finset α)
-  (imh : is_maximal_hyperedge sf G) : x ∉ G → ¬sf.sets (G ∪ {x}) ∨ G ∪ {x} = sf.ground :=
-by
-  intro hxG
-  by_cases h : sf.sets (G ∪ {x})
-  { right
-    obtain ⟨_, _ , G_max⟩ := imh
-    have G_subset : G ⊂ G ∪ {x} := by
-      rw [Finset.union_comm]
-      rw [←Finset.insert_eq]
-      exact Finset.ssubset_insert hxG
-
-    specialize G_max (G ∪ {x}) h G_subset
-    simp [G_max] }
-  { left; exact h }
--/
-/- This lemma helps in a more complex argument involving `map_hyperedge_injective`.
-lemma map_hyperedge_univ_eq [Fintype α] (sf : IdealFamily α) (x : α) (G : Finset α) (imh : is_maximal_hyperedge sf G) (H : Finset α) :
-  x ∈ H → sf.sets H → x ∉ G → H ≠ sf.ground → map_hyperedge sf x G H ≠ G :=
-by
-  intros hxH hsxH hxG hH
-  unfold map_hyperedge
-  by_cases h : H = sf.ground
-  { simp [h]; contradiction }
-  { rw [if_neg h]
-    intro h_eq
-    have H_eq : H = G ∪ {x} := by
-      rw [←Finset.insert_erase hxH]
-      subst h_eq
-      simp_all only [Finset.insert_erase]
-      ext1 a
-      simp_all only [Finset.mem_union, Finset.mem_erase,  Finset.mem_singleton]
-      apply Iff.intro
-      · intro a_1
-        simp_all only [and_true]
-        tauto
-      · intro a_1
-        cases a_1 with
-        | inl h_1 => simp_all only
-        | inr h_2 =>
-          subst h_2
-          simp_all only
-    have H_hyp_univ := G_union_x_hyperedge_or_univ sf x G imh hxG
-    cases H_hyp_univ with
-    | inl h_not_hyp => rw [←H_eq] at h_not_hyp; contradiction
-    | inr h_univ => rw [←H_eq] at h_univ; contradiction }
--/
-
-/- Strict subset characterization lemma.
-lemma strict_subset_implies_univ (H A U: Finset α):
-  ((H ⊂ A → A = U) ↔ (H ⊆ A → A = H ∨ A = U)) :=
-by
-  constructor
-  { intro h H_sub_A
-    by_cases h_eq : A = H
-    { left; exact h_eq }
-    { right
-      have : H ⊂ A := by
-        rw [Finset.ssubset_iff_subset_ne]
-        simp_all only [ne_eq, true_and]
-        apply Aesop.BuiltinRules.not_intro
-        intro a
-        subst a
-        simp_all only [subset_refl, not_true_eq_false]
-      exact h this } }
-  { intro h H_ssub_A
-    have H_sub_A := H_ssub_A.subset
-    cases h H_sub_A with
-    | inl hH =>
-    subst hH
-    simp_all only [subset_refl, true_or, imp_self]
-    simpa using H_ssub_A.2
-    | inr hU => exact hU }
--/
-
-/- The size of hyperedges containing v is exactly the degree of v.
-lemma card_hyperedges_with_v [Fintype α] (F : IdealFamily α) (v : α) [DecidablePred (λ H => F.sets H ∧ v ∈ H)] :
-  Finset.card ((F.ground.powerset).filter (λ H => F.sets H ∧ v ∈ H)) = F.degree v :=
-by
-  rw [IdealFamily.degree]
-  simp
-
--/

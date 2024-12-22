@@ -10,7 +10,7 @@ import FranklLean.FamilyLemma
 import FranklLean.DegreeOneHave
 import LeanCopilot
 
-set_option maxHeartbeats 1000000
+--set_option maxHeartbeats 1000000
 
 namespace Frankl
 
@@ -41,7 +41,7 @@ by
 
   rw [left_hand]
   rw [right_hand]
-  simp_all only [Nat.cast_add, add_left_inj]
+  simp_all only [Nat.cast_add]
   rfl
 
 lemma sumbij (F : SetFamily α) [DecidablePred F.sets] (x : α)  :
@@ -68,13 +68,13 @@ by
 
   have h_mem : ∀ s (hs : s ∈ domain0), i s hs ∈ range0 := by
     intros s hs
-    simp_all only [Finset.mem_filter, Finset.mem_powerset, i, domain0, range0]
+    simp_all only [ i,  range0]--
     simp_all only [Finset.mem_filter, Finset.mem_powerset, domain0]
     obtain ⟨left, right⟩ := hs
     obtain ⟨left_1, right⟩ := right
     apply And.intro
     · intro y hy
-      simp_all only [Finset.mem_erase, ne_eq, not_false_eq_true, true_and]
+      simp_all only [Finset.mem_erase, ne_eq, not_false_eq_true, true_and]--
       obtain ⟨_, right_1⟩ := hy
       exact left right_1
     · apply Exists.intro
@@ -121,16 +121,14 @@ by
         exact ⟨hH_sets,hH_x⟩
     use H ,Hd
     subst hH_eq
-    simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, and_imp, subset_refl, domain0, i, range0]
+    simp_all only [  range0]
 
   have h_val : ∀ s (hs : s ∈ domain0), f s = g (i s hs) := by
     -- here we show: card(s) = (card (s.erase x)) + 1
     intros s hs
     have hx_in_s : x ∈ s := by
-      simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, and_imp, subset_refl, exists_prop,
-        forall_exists_index, domain0, i, range0]
-    simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, and_imp, subset_refl, exists_prop,
-      forall_exists_index, Finset.card_erase_add_one, domain0, i, range0, f, g]
+      simp_all only [Finset.mem_filter, domain0]
+    simp_all only [ Finset.card_erase_add_one, i,  g]--
 
   /- 1) Use sum_bij to get the sum equality *without* rewriting yet -/
   have eq_sum : ∑ s in domain0, f s = ∑ s in range0, g s :=
@@ -174,13 +172,12 @@ by
       intro s hs
       simp only [Finset.mem_filter] at hs
       have h_card : s.card ≥ 1 := by
-        simp_all only [Int.ofNat_eq_coe, add_tsub_cancel_right, Finset.mem_powerset, ge_iff_le,
-          Finset.one_le_card]
+        simp_all only [Finset.one_le_card]
         obtain ⟨_, right⟩ := hs
         obtain ⟨_, right⟩ := right
         exact ⟨x, right⟩
       -- To show Int.ofNat s.card - 1 ≥ 0
-      simp_all only [Int.ofNat_eq_coe, sub_nonneg, Nat.one_le_cast]
+      simp_all only [Int.ofNat_eq_coe, sub_nonneg, Nat.one_le_cast]--
 
     exact Finset.sum_nonneg h_nonneg
 
@@ -201,8 +198,7 @@ by
           ↑(Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset).card =
         ∑ x ∈ Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (F.ground.erase x).powerset, (↑x.card) :=
       by
-        simp_all only [Int.ofNat_eq_coe, Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, mul_one, Nat.cast_add,
-          Nat.cast_sum, sub_left_inj, add_sub_cancel_right]
+        simp_all only [add_sub_cancel_right]
         simp_all only [add_tsub_cancel_right]
     rw [eq_card] at sumbij_result_int
 
@@ -350,18 +346,5 @@ by
   --rw [ideal_deletion_haveuv_total F x hx geq2 hx_hyperedge]
   --rw [ideal_deletion_haveuv_num F x hx geq2 hx_hyperedge]
   convert eqn_lemma
-
-
-
-/-
-
-theorem nonpositive_nds_haveUV (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
-  (hs : F.sets {x})(hx_hyperedge : F.sets (F.ground \ {x})) :
-  F.normalized_degree_sum =
-  (F.deletion x hx geq2).normalized_degree_sum +
-  (F.contraction x hs geq2).normalized_degree_sum
-  +2*(F.degree x) - F.number_of_hyperedges :=
-by
--/
 
 end Frankl

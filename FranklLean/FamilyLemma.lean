@@ -27,13 +27,11 @@ by
     have : ∅ ≠ F.ground:= by
       intro h
       have h' := F.nonempty_ground
-      simp_all only [Finset.mem_singleton, Finset.insert_eq_of_mem, Finset.singleton_subset_iff, Finset.mem_filter,
-        Finset.mem_powerset, subset_refl, true_and, Finset.card_singleton, Finset.one_le_card]
+      simp_all only [Finset.one_le_card]
       rw [← h] at h'
       simp_all only
       simp [← h] at h'
-    simp_all only [Finset.mem_singleton, not_false_eq_true, Finset.card_insert_of_not_mem, Finset.card_singleton,
-      Nat.reduceAdd, ne_eq]
+    simp_all only [Finset.mem_singleton, not_false_eq_true, Finset.card_insert_of_not_mem, Finset.card_singleton]--
   simp_all only [ge_iff_le, Nat.ofNat_le_cast]
 
 lemma setfamily_hyperedges_total (F : IdealFamily α) [DecidablePred F.sets] :
@@ -63,16 +61,13 @@ by
   · intro _
     linarith
 
-
-
 lemma family_union (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s => F.sets s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset ∪ Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset:=
 by
   ext1 a
-  simp_all only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_union]
+  simp_all only [Finset.mem_filter,  Finset.mem_union]
   apply Iff.intro
   · intro a_1
     simp_all only [true_and]
-    --obtain ⟨_, _⟩ := a_1
     tauto
   · intro a_1
     cases a_1 with
@@ -84,8 +79,7 @@ by
   have contradict: ∀ s: Finset α, s ∈ F.ground.powerset → ¬ ((F.sets s ∧ v ∈ s) ∧ (F.sets s ∧ v ∉ s)) :=
   by
     intro s _
-    simp_all only [Finset.mem_powerset, not_and, not_true_eq_false, and_false, not_false_eq_true, and_imp,
-      implies_true]
+    simp_all only [ not_and, not_true_eq_false, not_false_eq_true, implies_true]--
 
   let result := filter_num F.ground.powerset contradict
   have : ∀ s : Finset α, s ∈ F.ground.powerset → (F.sets s ∧ v ∈ s ∨ F.sets s ∧ v ∉ s ↔ F.sets s) := by
@@ -166,7 +160,7 @@ by
         rw [h1] at hy_in_s
         contradiction
       · -- Otherwise, y ≠ x, so y ∈ s implies y ∈ F.ground.erase x
-        simp_all only [Finset.mem_erase, ne_eq, not_false_eq_true, true_and]
+        simp_all only [Finset.mem_erase, ne_eq, not_false_eq_true, true_and]--
         exact a hy_in_s
     · -- (←) If s ⊆ F.ground.erase x, then trivially s ⊆ F.ground since (F.ground.erase x) ⊆ F.ground
       intro h2
@@ -206,7 +200,7 @@ by
     rw [Finset.subset_erase] at left
     exact left.1
   intro x_1 _
-  simp_all only [Finset.mem_filter, Finset.mem_powerset, Int.ofNat_eq_coe]
+  simp_all only [ Int.ofNat_eq_coe]
 
 ---------------------------------------------------
 theorem fintype_card_eq_of_bijective {α β : Type*}
@@ -254,7 +248,7 @@ by
   have : x.erase v ∪ {v} = x := by
     subst sv
     ext
-    simp_all only [Finset.mem_union, Finset.mem_erase, ne_eq, Finset.mem_singleton]
+    simp_all only [Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]--
     apply Iff.intro
     · intro a
       cases a with
@@ -289,22 +283,22 @@ by
     have h1: v ∉ a1.val:= by
       intro h
       have h' := a1.property
-      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      simp_all only [Finset.mem_filter]
       obtain ⟨val, property⟩ := a1
       obtain ⟨val_1, property_1⟩ := a2
       obtain ⟨_, right⟩ := h'
       obtain ⟨w, h_1⟩ := right
-      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true]
+      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false]--
 
     have h2: v ∉ a2.val:= by
       intro h
       have h' := a2.property
-      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      simp_all only [Finset.mem_filter]
       obtain ⟨val, property⟩ := a1
       obtain ⟨val_1, property_1⟩ := a2
       obtain ⟨_, right⟩ := h'
       obtain ⟨w, h_1⟩ := right
-      simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true]
+      simp_all only [Finset.mem_erase, ne_eq]--
 
     ext x
     apply Iff.intro
@@ -363,11 +357,10 @@ by
     constructor
     · simp_all only [Finset.mem_filter, Finset.mem_powerset]
       ext a_1 : 2
-      simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, Finset.mem_union, Finset.mem_erase, ne_eq,
-        Finset.mem_singleton]
+      simp_all only [Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]--
       obtain ⟨val, property⟩ := a
       simp_all only
-      simp_all only [Finset.mem_filter, Finset.mem_powerset]
+      simp_all only [Finset.mem_filter]
       apply Iff.intro
       · intro a
         cases a with
@@ -379,7 +372,7 @@ by
         simp_all only [and_true]
         tauto
 
-    · simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self]
+    · simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self]--
 
 lemma contraction_eq_card (F:SetFamily α)[DecidablePred F.sets] (v : α):
   let range:= Finset.filter (fun (s :Finset α) ↦ F.sets s ∧ v ∈ s) F.ground.powerset
@@ -395,8 +388,6 @@ by
   rw [Fintype.card_coe domain] at result
   rw [Fintype.card_coe range] at result
   simp_all only [domain, range]
-
-
 
 /--
 A small lemma that splits the sum over a union of two disjoint finsets.
@@ -430,13 +421,13 @@ by
     apply Iff.intro
     · -- Forward direction
       intro a
-      simp_all only [Finset.mem_filter, Finset.mem_powerset, true_and, Fsets, Fv, Fnv]
+      simp_all only [Finset.mem_filter, true_and, Fsets, Fv, Fnv]--
       obtain ⟨_, right⟩ := a
       contrapose! right
       simp_all only [not_and_self]
     · -- Backward direction
       intro a
-      simp_all only [Finset.mem_filter, Finset.mem_powerset, Fv, Fnv, Fsets]
+      simp_all only [Finset.mem_filter, Fv, Fnv, Fsets]--
       cases a with
       | inl h => simp_all only [and_self]
       | inr h_1 => simp_all only [and_self]
@@ -450,11 +441,10 @@ by
     -- Prove Fv and Fnv are disjoint: if a set is in Fv (v ∈ s) it can't be in Fnv (v ∉ s).
     rw [Finset.disjoint_left]
     intros a ha
-    simp_all only [Finset.mem_filter, Finset.mem_powerset, not_true_eq_false, and_false, not_false_eq_true, Fsets, Fv,
-      Fnv]
+    simp_all only [Finset.mem_filter,not_true_eq_false, and_false, not_false_eq_true,  Fv,   Fnv]--
 
   -- Combine everything
-  simp_all only [Int.ofNat_eq_coe, Nat.cast_sum, Nat.cast_add, Fsets, Fv, Fnv]
+  simp_all only [Int.ofNat_eq_coe,  Nat.cast_add, Fsets]--
 
 lemma number_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
   F.number_of_hyperedges = F.toSetFamily.number_of_hyperedges :=

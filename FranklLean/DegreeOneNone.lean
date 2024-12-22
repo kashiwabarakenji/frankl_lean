@@ -52,7 +52,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
 
     have disjoint2: ∀ s ∈ F.ground.powerset, ¬((F.sets s ∧ v ∉ s) ∧ s = F.ground) := by
       intro s a
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
+      simp_all only [ not_and, and_imp]--
       intro a_1 a_2
       apply Aesop.BuiltinRules.not_intro
       intro a_3
@@ -65,9 +65,9 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
         exact filter_sum_func (F.ground).powerset (λ s =>  s.card) disjoint2
 
     have ground_card: ∑ x ∈ Finset.filter (fun s => s = F.ground) F.ground.powerset, Int.ofNat x.card = Int.ofNat n + 1:= by
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
+      simp_all only [ rightset]
       rw [Finset.filter_eq']
-      simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]
+      simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]--
       rw [Int.ofNat_eq_coe]
       rw [Int.ofNat_add n 1]
       rw [Int.ofNat_eq_coe]
@@ -75,9 +75,9 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
 
     dsimp [leftset, rightset] at sum_lem
     simp_all only [Finset.mem_filter, Finset.mem_powerset]
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, not_and, and_imp, Int.ofNat_eq_coe, leftset, rightset]
+    simp_all only [rightset]
     simp_rw [Finset.filter_eq']
-    simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]
+    simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]--
     rfl
 
 
@@ -99,8 +99,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
       have disjoint: leftset ∩ rightset = ∅ := by
         simp_all only [ge_iff_le, Nat.reduceLeDiff, leftset, rightset]
         ext1 a
-        simp_all only [Finset.mem_inter, Finset.mem_filter, Finset.mem_powerset, Finset.not_mem_empty, iff_false,
-          not_and, true_and, and_imp]
+        simp_all only [Finset.mem_inter, Finset.mem_filter, Finset.not_mem_empty, iff_false, not_and, true_and, and_imp]--
         intro a_1 a_2 a_3
         apply Aesop.BuiltinRules.not_intro
         intro a_4
@@ -109,7 +108,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
 
       have disjoint2: ∀ s ∈ (F.ground.erase v).powerset, ¬((F.sets s ∧ v ∉ s) ∧ s = F.ground.erase v) := by
         intro s a
-        simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
+        simp_all only [ not_and, and_imp]--
         intro a_1 a_2
         apply Aesop.BuiltinRules.not_intro
         intro a_3
@@ -122,11 +121,11 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
 
       have ground_card: ∑ x ∈ Finset.filter (fun s => s = (F.ground.erase v)) (F.ground.erase v).powerset, x.card = n :=
       by
-        simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
+        simp_all only [ rightset]
         rw [Finset.filter_eq']
-        simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton,Finset.erase_eq]
+        simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton,Finset.erase_eq]--
         rw [Finset.card_sdiff]
-        · simp_all only [Finset.card_singleton, add_tsub_cancel_right]
+        · simp_all only [Finset.card_singleton, add_tsub_cancel_right]--
         · simp_all only [Finset.singleton_subset_iff]
 
       dsimp [leftset, rightset] at sum_lem
@@ -150,7 +149,7 @@ lemma total_eq_lem (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
       simp_all only [Finset.mem_filter, Finset.mem_powerset]
       apply Iff.intro
       intro a
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, not_false_eq_true, and_self, and_true]
+      simp_all only [ not_false_eq_true,  and_true]--
       obtain ⟨left, right⟩ := a
       obtain ⟨_, right⟩ := right
       intro y hy
@@ -163,7 +162,7 @@ lemma total_eq_lem (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
       · exact left hy
 
       intro a
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, not_false_eq_true, and_self, and_true]
+      simp_all only [ not_false_eq_true, and_self, and_true]
       obtain ⟨left, right⟩ := a
       obtain ⟨left_1, right⟩ := right
       rw [Finset.subset_iff] at left
@@ -188,9 +187,9 @@ lemma induction_assum_lem (n : Nat) (F: IdealFamily α) [DecidablePred F.sets] (
       have h_assum_card: idealDelF.ground.card = F.ground.card - 1 := by
         rw [h_ground]
         rw [Finset.card_sdiff]
-        simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
-        simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, add_tsub_cancel_right]
+        simp_all only [ Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]--
+        simp_all only [Finset.singleton_subset_iff]
+      simp_all only [add_tsub_cancel_right]
 
     have h_assum_card1: idealDelF.ground.card ≥ 1 := by
       linarith
@@ -240,7 +239,7 @@ by
   | inl h => simp_all only [not_false_eq_true, true_or]
   | inr h_1 =>
     subst h_1
-    simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, true_or]
+    simp_all only [Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true, true_or]--
 
   intro a_1
   simp_all only [Finset.mem_powerset, true_and, F']
@@ -251,10 +250,10 @@ by
     simp_all only [not_false_eq_true, and_true]
   | inr h_1 =>
     subst h_1
-    simp_all only [Finset.mem_sdiff, Finset.mem_singleton, not_true_eq_false, and_false, not_false_eq_true, and_true]
+    simp_all only [Finset.mem_sdiff,  and_true]
     apply Or.inr
     ext1 a
-    simp_all only [Finset.mem_sdiff, Finset.mem_singleton, Finset.mem_erase, ne_eq]
+    simp_all only [Finset.mem_sdiff, Finset.mem_singleton, Finset.mem_erase, ne_eq]--
     apply Iff.intro
     · intro a_1
       simp_all only [not_false_eq_true, and_self]
@@ -285,8 +284,8 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
     have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
       rw [h_ground]
       rw [Finset.card_sdiff]
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
-      simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
+      simp_all only [ Finset.card_singleton]--
+      simp_all only [ Finset.singleton_subset_iff]
 
     have degone: F.degree v = 1 := by
       exact degree_one_if_not_hyperedge F v_in_ground singleton_none
@@ -355,7 +354,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
     have Q_card: (Finset.filter Q F.ground.powerset) = {F.ground} := by
       dsimp [Q]
       ext1 s
-      simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]
+      simp only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_singleton]--
       constructor
       · -- (s ∈ powerset ∧ s = F) → s = F
         intro ⟨_, h_eq⟩
@@ -381,50 +380,6 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
           rw [←Finset.erase_eq]
           exact Finset.erase_subset v F.ground
         · exact h_eq
-/-
-    have number_small: Finset.filter P F.ground.powerset = Finset.filter P (F.ground \ {v}).powerset := by
-      ext1 s
-      apply Iff.intro
-      · intro a
-        dsimp [P]
-        dsimp [P] at a
-        rw [Finset.mem_filter] at a
-        rw [Finset.mem_filter]
-        constructor
-        · rw [Finset.mem_powerset] at a
-          rw [Finset.mem_powerset]
-          rw [Finset.subset_sdiff]
-          constructor
-          · exact a.1
-          · dsimp [Disjoint]
-            intro b
-            intro b_in_v
-            let _ := a.2.2 --need to use this to get the contradiction
-            intro v_in_s
-            let tmp := Finset.subset_singleton_iff.mp v_in_s
-            cases tmp
-            case inl h => rw [h]
-            case inr h =>
-              rw [h] at b_in_v
-              have b_in_v2: v ∈ s := by
-                exact Finset.singleton_subset_iff.mp b_in_v
-              contradiction
-        · constructor
-          · exact a.2.1
-          · exact a.2.2
-
-      · intro a
-        dsimp [P]
-        dsimp [P] at a
-        rw [Finset.mem_filter] at a
-        rw [Finset.mem_filter]
-        constructor
-        · rw [Finset.mem_powerset] at a
-          rw [Finset.mem_powerset]
-          rw [Finset.subset_sdiff] at a
-          exact a.1.1
-        · exact a.2
--/
 
     have FDel_hand: IdealDel.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter R F.ground.powerset).card := by
       rw [SetFamily.number_of_hyperedges]
@@ -472,7 +427,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
 
     rw [F_hand]
     simp
-    simp_all only [Finset.mem_powerset, not_and, and_imp, Finset.card_singleton, Nat.cast_one, IdealDel, P, Q, R]
+    simp_all only [Finset.card_singleton]
     convert FDel_hand
 
 -- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
@@ -496,10 +451,10 @@ by
   have h_ground_card:Int.ofNat IdealDel.ground.card = Int.ofNat F.ground.card - 1 := by
     rw [h_ground]
     rw [Finset.card_sdiff]
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
+    simp_all only [Finset.card_singleton, add_tsub_cancel_right]
     simp_all only [Int.ofNat_eq_coe, IdealDel]
     omega
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
+    simp_all only [Finset.singleton_subset_iff]
 
   have h_ground_card_n: IdealDel.ground.card = F.ground.card - 1:= by
     simp_all only [Int.ofNat_eq_coe, IdealDel]

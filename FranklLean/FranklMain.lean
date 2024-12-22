@@ -1,3 +1,4 @@
+--Main theorem is ideal_average_rarity
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Init.Data.Int.Lemmas
@@ -8,7 +9,7 @@ import FranklLean.BasicDefinitions
 import FranklLean.BasicLemmas
 import FranklLean.DegreeOneHave
 import FranklLean.DegreeOneNone
-import FranklLean.NDSHave
+import FranklLean.FranklNDS
 import LeanCopilot
 
 namespace Frankl
@@ -24,14 +25,14 @@ by
     have h_singleton := Finset.card_eq_one.mp h
     obtain ⟨v', hv'⟩ := h_singleton
     rw [hv'] at hv
-    simp_all only [Finset.card_singleton, Finset.mem_singleton]
+    simp_all only [Finset.mem_singleton]
   let tmp_arg := F.has_ground
   rw [h'] at tmp_arg
   have hasGround:F.sets {v}:= tmp_arg
   have hasEmpty:F.sets ∅ := F.has_empty
   have h'' : F.ground.powerset = ({∅, {v}}:Finset (Finset α)) :=
   by
-    simp_all only [Finset.card_singleton, Finset.mem_singleton]
+    simp_all only [Finset.mem_singleton]
     rfl
   have total: F.total_size_of_hyperedges = 1:= by
     dsimp [SetFamily.total_size_of_hyperedges]
@@ -40,7 +41,7 @@ by
     rw [Finset.filter_true_of_mem]
     congr
     intro x a
-    simp_all only [Finset.card_singleton, Finset.mem_singleton, Finset.mem_insert]
+    simp_all only [ Finset.mem_singleton, Finset.mem_insert]
     cases a with
     | inl h =>
       subst h
@@ -54,7 +55,7 @@ by
     rw [Finset.filter_true_of_mem]
     congr
     intro x a
-    simp_all only [Finset.card_singleton, Finset.mem_singleton, Finset.mem_insert]
+    simp_all only [ Finset.mem_singleton, Finset.mem_insert]--
     cases a with
     | inl h =>
       subst h
@@ -67,25 +68,8 @@ by
     rw [total]
     rw [h''']
     simp
-    simp_all only [Finset.card_singleton, Finset.mem_singleton, Nat.cast_one, mul_one, sub_self]
-  simp_all only [Finset.card_singleton, Finset.mem_singleton, le_refl]
-
-/-
--- Lemma for the degree-one case
-lemma degree_one_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (geq2: F.ground.card ≥ 2)(h_uv_have : (F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
-  : F.normalized_degree_sum ≤ 0 :=
-by
-  sorry
--/
-
-
-
--- Lemma stating that contraction of F at v forms an ideal family
---lemma isIdealFamily_cont (F : IdealFamily α)[DecidablePred F.sets](v : α)(geq2: F.ground.card ≥ 2)(hassingleton: F.sets {v}) : isIdealFamily (F.contraction v hassingleton geq2):= sorry
-
--- Lemma stating that deletion of v from F forms an ideal family
---lemma isIdealFamily_del (F : IdealFamily α)[DecidablePred F.sets](v : α) (geq2: F.ground.card ≥ 2): isIdealFamily (F.deleletion v geq2):= sorry
+    simp_all only [ Nat.cast_one, mul_one, sub_self]--
+  simp_all only [ le_refl]--
 
 -- Case: U\{v} is a hyperedge scenario
 -- Uses induction hypothesis, and conditions on the contracted and deleted families
@@ -144,7 +128,7 @@ lemma nonpositive_nds_nothaveUV
     exact ground_deletion_ideal_card F v hx geq2
     )
     have geq1: Int.ofNat F.ground.card - 1 ≥ 0 := by
-      simp_all only [Int.ofNat_eq_coe, ge_iff_le, sub_nonneg, Nat.one_le_cast, Finset.one_le_card, tmp]
+      simp_all only [Int.ofNat_eq_coe,  sub_nonneg, Nat.one_le_cast, Finset.one_le_card]--
       exact ⟨v, hx⟩
     linarith
 
@@ -158,8 +142,8 @@ lemma nonpositive_nds_nothaveUV
     exact rv
   linarith
 
--- Main theorem skeleton
-theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets] (hn : Int.ofNat F.ground.card = Int.ofNat n) :
+--Main theorem:
+theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets] (hn :  F.ground.card = n) :
   F.normalized_degree_sum ≤ 0 := by
   -- Induction on the size of the ground set
   cases h:F.ground.card with
@@ -170,7 +154,8 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
     exfalso
     have hh := F.nonempty_ground
     have h_empty : F.ground = ∅ := by
-      simp_all only [Finset.card_eq_zero, Finset.not_nonempty_empty]
+      subst hn
+      simp_all only [Finset.card_eq_zero]
     simp_all only [Finset.card_empty, Finset.not_nonempty_empty]
 
   | succ n =>
@@ -178,17 +163,18 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
     if n = 0 then
       -- Base case: size of the ground set is one
       have h1: F.ground.card = 1 := by
-        simp_all only [Nat.succ_eq_add_one, add_left_eq_self, zero_add]
+        simp_all only [zero_add]
       exact nonpositive_nds_one F h1
     else
       -- Inductive step: size of the ground set is greater than one
+      -- existance of a rare element
     obtain  ⟨v, rv0⟩ := ideal_version_of_frankl_conjecture F
 
     have rv : is_rare F.toSetFamily v := by
       dsimp [is_rare]
       rw [number_eq_card F]
-      simp_all only [Int.ofNat_eq_coe, tsub_le_iff_right, zero_add]
-      obtain ⟨left, right⟩ := rv0
+      simp_all only [ tsub_le_iff_right, zero_add]
+      obtain ⟨_, right⟩ := rv0
       exact right
 
     have geq2: F.ground.card ≥ 2 := by
@@ -201,24 +187,27 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
       rw [h]
       omega
     -- Consider whether {v} is a hyperedge
-    have ih:  (∀ (F':IdealFamily α) [DecidablePred F'.sets] , Int.ofNat F'.ground.card = Int.ofNat n → F'.normalized_degree_sum ≤ 0) :=
+    have ih:  (∀ (F':IdealFamily α) [DecidablePred F'.sets] , F'.ground.card = n → F'.normalized_degree_sum ≤ 0) :=
     by
       intro hh
       exact ideal_average_rarity hh
 
     rw [groundn] at ih
     have ih' : ∀ (F' : IdealFamily α) [inst : DecidablePred F'.sets],
-      Int.ofNat F'.ground.card = Int.ofNat F.ground.card - 1 → F'.normalized_degree_sum ≤ 0:=
+      F'.ground.card = Int.ofNat F.ground.card - 1 → F'.normalized_degree_sum ≤ 0:=
     by
       intro F' inst hh
-      rw [Int.ofNat_eq_coe] at hh
-      have int_sub: Int.ofNat (F.ground.card - 1) = Int.ofNat F.ground.card - 1  := by
+      have hh' : F'.ground.card = F.ground.card - 1 := by
+        apply Int.ofNat.inj
         rw [Int.ofNat_eq_coe]
         rw [Int.ofNat_eq_coe]
-        rw [Int.ofNat_sub geq1]
+        --rw [Int.ofNat_eq_coe] at hh
+        rw [hh]
+        rw [Int.ofNat_sub]
         simp
-      rw [int_sub] at ih
-      exact ih F' hh
+        exact geq1
+
+      exact ih F' hh'
 
     by_cases h_v : F.sets {v}
     case pos =>
@@ -239,4 +228,6 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
       case neg =>
         exact degree_one_nothaveUV F v rv0.1 geq2 h_v h_uv ih'
 
---termination_by ideal_average_rarity F => F.ground.card
+--termination_by  (F.ground.card)
+
+end Frankl
