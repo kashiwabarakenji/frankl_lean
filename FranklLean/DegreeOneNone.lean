@@ -62,18 +62,24 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
     have sum_lem:
       ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground) (F.ground).powerset, x.card =
       ∑ x ∈ leftset, x.card + ∑ x ∈ rightset, x.card := by
-        exact filter_sum_func (F.ground).powerset (λ s => s.card) disjoint2
+        exact filter_sum_func (F.ground).powerset (λ s =>  s.card) disjoint2
 
-    have ground_card: ∑ x ∈ Finset.filter (fun s => s = F.ground) F.ground.powerset, x.card = n + 1:= by
+    have ground_card: ∑ x ∈ Finset.filter (fun s => s = F.ground) F.ground.powerset, Int.ofNat x.card = Int.ofNat n + 1:= by
       simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.mem_powerset, not_and, and_imp, leftset, rightset]
       rw [Finset.filter_eq']
       simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]
+      rw [Int.ofNat_eq_coe]
+      rw [Int.ofNat_add n 1]
+      rw [Int.ofNat_eq_coe]
+      omega
 
     dsimp [leftset, rightset] at sum_lem
     simp_all only [Finset.mem_filter, Finset.mem_powerset]
-    rw [←ground_card] at sum_lem
-    simp_all only [ge_iff_le, Nat.reduceLeDiff, not_and, and_imp, leftset, rightset]
+    simp_all only [ge_iff_le, Nat.reduceLeDiff, not_and, and_imp, Int.ofNat_eq_coe, leftset, rightset]
+    simp_rw [Finset.filter_eq']
+    simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.sum_singleton]
     rfl
+
 
   lemma total_eq_lem_right (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
     (F : IdealFamily α)(h : DecidablePred (λ s=> F.sets s)) (v : α)
@@ -471,7 +477,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
 
 -- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
 lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
-  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
+  (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = Int.ofNat F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by
 
@@ -487,20 +493,29 @@ by
     dsimp [IdealDel]
     dsimp [IdealFamily.deletion]
     rw [Finset.erase_eq]
-  have h_ground_card:IdealDel.ground.card = F.ground.card - 1 := by
+  have h_ground_card:Int.ofNat IdealDel.ground.card = Int.ofNat F.ground.card - 1 := by
     rw [h_ground]
     rw [Finset.card_sdiff]
     simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.card_singleton, add_tsub_cancel_right]
+    simp_all only [Int.ofNat_eq_coe, IdealDel]
+    omega
     simp_all only [ge_iff_le, Nat.reduceLeDiff, Finset.singleton_subset_iff]
 
+  have h_ground_card_n: IdealDel.ground.card = F.ground.card - 1:= by
+    simp_all only [Int.ofNat_eq_coe, IdealDel]
+    omega
+
   have h_card : F.ground.card = IdealDel.ground.card + 1 := by
-    rw [h_ground_card]
-    rw [Nat.sub_add_cancel]
+    simp_all only [Int.ofNat_eq_coe, IdealDel]
     linarith
 
   let ihnds := ih IdealDel h_ground_card
   dsimp [SetFamily.normalized_degree_sum] at ihnds
-  have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2 (by linarith [h_card]) (by linarith [ihnds]) rfl
+  have h_ind := induction_assum_lem (F.ground.card - 1) F IdealDel v v_in_ground geq2
+    (by simp_all only [add_tsub_cancel_right, IdealDel])
+
+    --(by linarith [h_card, h_ground_card])
+    (by linarith [ihnds, h_ground_card]) rfl
 
   simp [SetFamily.normalized_degree_sum]
 
@@ -509,7 +524,7 @@ by
   have total:  F.total_size_of_hyperedges = IdealDel.total_size_of_hyperedges + 1 := by
     have degone: F.degree v = 1 := by
       exact degree_one_if_not_hyperedge F v_in_ground singleton_none
-    rw [h_ground_card] at h_card
+    rw [h_ground_card_n] at h_card
     let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not geq2 h_card
     dsimp [IdealDel]
     dsimp [IdealFamily.deletion]

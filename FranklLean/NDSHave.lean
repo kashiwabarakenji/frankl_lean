@@ -316,8 +316,8 @@ lemma eqn (Dtotal Ctotal Dnum Cnum degree ground_card : ℤ):
 by
   ring_nf
 
-theorem nonpositive_nds_haveUV (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
-  [DecidablePred F.sets] (hs : F.sets {x})--(hx_hyperedge : F.sets (F.ground \ {x}))
+theorem nds_set_minors (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+ (hs : F.sets {x})--(hx_hyperedge : F.sets (F.ground \ {x}))
    --[DecidablePred (F.toSetFamily.deletion x hx geq2).sets] [DecidablePred (F.toSetFamily.contraction x hx geq2).sets]
    :
   F.toSetFamily.normalized_degree_sum =
@@ -350,5 +350,18 @@ by
   --rw [ideal_deletion_haveuv_total F x hx geq2 hx_hyperedge]
   --rw [ideal_deletion_haveuv_num F x hx geq2 hx_hyperedge]
   convert eqn_lemma
+
+
+
+/-
+
+theorem nonpositive_nds_haveUV (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  (hs : F.sets {x})(hx_hyperedge : F.sets (F.ground \ {x})) :
+  F.normalized_degree_sum =
+  (F.deletion x hx geq2).normalized_degree_sum +
+  (F.contraction x hs geq2).normalized_degree_sum
+  +2*(F.degree x) - F.number_of_hyperedges :=
+by
+-/
 
 end Frankl

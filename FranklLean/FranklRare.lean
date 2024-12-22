@@ -1,3 +1,4 @@
+--the main theorem of this file is ideal_version_of_frankl_conjecture
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic

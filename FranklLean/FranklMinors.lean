@@ -614,7 +614,6 @@ by
     rw [←Finset.erase_eq]
 
     let co_sum:=  sum_one (F.ground.erase x) (λ s => s.card)
-    --rw [Finset.sum_singleton]
     calc
     (Finset.filter (fun s => s = F.ground.erase x) (F.ground.erase x).powerset).sum Finset.card
       = (Finset.filter (fun s => s = F.ground.erase x) (F.ground.erase x).powerset).sum (λ s => s.card) := by simp_all only [add_right_inj,
@@ -644,6 +643,75 @@ by
   simp_all
   convert h_cast
 
+lemma nds_deletion_haveuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets](hx_hyperedge : F.sets (F.ground \ {x})) :
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum :=
+by
+  calc
+    (F.deletion x hx geq2).normalized_degree_sum
+        = 2 * (F.deletion x hx geq2).total_size_of_hyperedges - (F.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.deletion x hx geq2).ground.card := by
+          dsimp [SetFamily.normalized_degree_sum]
+      _ = 2 * (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card := by
+        rw [ideal_deletion_haveuv_num F x hx geq2 hx_hyperedge]
+        rw [ideal_deletion_haveuv_total F x hx geq2 hx_hyperedge]
+        simp_all only [Int.ofNat_eq_coe, sub_right_inj, mul_eq_mul_left_iff, Nat.cast_inj]
+        tauto
+      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum := by
+          simp_all only [Int.ofNat_eq_coe]
+          rfl
+
+lemma nds_contraction_haveuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hs : F.sets {x}) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets] :
+  (F.contraction x hs geq2).normalized_degree_sum = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).normalized_degree_sum :=
+by
+  calc
+    (F.contraction x hs geq2).normalized_degree_sum
+        = 2 * (F.contraction x hs geq2).total_size_of_hyperedges - (F.contraction x hs geq2).number_of_hyperedges * Int.ofNat (F.contraction x hs geq2).ground.card := by
+          dsimp [SetFamily.normalized_degree_sum]
+      _ = 2 * (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).total_size_of_hyperedges - (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).ground.card := by
+        rw [set_ideal_contraction_num F x hs geq2]
+        rw [set_ideal_contraction_total F x hs geq2]
+        simp_all only [Int.ofNat_eq_coe, sub_right_inj, mul_eq_mul_left_iff, Nat.cast_inj]
+        tauto
+      _ = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).normalized_degree_sum := by
+          simp_all only [Int.ofNat_eq_coe]
+          rfl
+
+lemma ground_deletion_ideal_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (IdealFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat  F.ground.card - 1 :=
+  by
+    rw [IdealFamily.deletion]
+    rw [Finset.card_erase_of_mem hx]
+    simp_all only [ge_iff_le, Int.ofNat_eq_coe]
+    omega
+
+lemma nds_deletion_noneuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets](hx_hyperedge : ¬F.sets (F.ground \ {x})) :
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
+by
+  calc
+    (F.deletion x hx geq2).normalized_degree_sum
+        = 2 * (F.deletion x hx geq2).total_size_of_hyperedges - (F.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.deletion x hx geq2).ground.card := by
+          dsimp [SetFamily.normalized_degree_sum]
+      _ = 2 * ((F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges + (F.ground.card - 1)) - ((F.toSetFamily.deletion x hx geq2).number_of_hyperedges + 1)* Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card:= by
+        rw [ideal_deletion_noneuv_num F x hx geq2 hx_hyperedge]
+        rw [ideal_deletion_noneuv_total F x hx geq2 hx_hyperedge]
+        simp_all only [Int.ofNat_eq_coe, sub_right_inj, mul_eq_mul_left_iff, Nat.cast_inj]
+        apply Or.inl
+        rfl
+      _ = 2 * (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card +  2* (Int.ofNat F.ground.card) - 2 - Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card:= by
+        simp_all only [Int.ofNat_eq_coe, sub_right_inj, mul_eq_mul_left_iff, Nat.cast_inj]
+        ring_nf
+      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + 2* (Int.ofNat F.ground.card) - 2 - (Int.ofNat F.ground.card - 1) := by
+        --simp_all only [Int.ofNat_eq_coe]
+        dsimp [SetFamily.normalized_degree_sum]
+        simp [ground_deletion_ideal_card F x hx geq2]
+        ring_nf
+        exact ground_deletion_ideal_card F x hx geq2
+      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:= by
+        simp_all only [Int.ofNat_eq_coe]
+        ring_nf
+
 lemma ground_deletion_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
@@ -655,13 +723,6 @@ lemma ground_deletion_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (gr
     · simp_all only [Finset.one_le_card]
       use x
 
-lemma ground_deletion_ideal_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (IdealFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat  F.ground.card - 1 :=
-  by
-    rw [IdealFamily.deletion]
-    rw [Finset.card_erase_of_mem hx]
-    simp_all only [ge_iff_le, Int.ofNat_eq_coe]
-    omega
 
 lemma ground_deletion_ideal  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (IdealFamily.deletion F x hx ground_ge_two).ground = F.ground \ {x} :=
@@ -677,8 +738,8 @@ by
   · intro a_1
     simp_all only [not_false_eq_true, and_self]
 
-lemma ground_contraction_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (SetFamily.contraction F.toSetFamily x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
+lemma ground_contraction_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
+  (SetFamily.contraction F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
     rw [SetFamily.contraction]
     rw [Finset.card_erase_of_mem hx]
@@ -711,10 +772,34 @@ by
   simp
   rw [Finset.erase_eq]
 
-lemma ground_contraction_ideal_card  (F : IdealFamily α) (x : α) (ground_ge_two: F.ground.card ≥ 2)(singleton_have: F.sets {x}):
-  (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
+lemma ground_contraction_ideal_card  (F : IdealFamily α) (x : α)(singleton_have: F.sets {x}) (ground_ge_two: F.ground.card ≥ 2):
+  Int.ofNat (IdealFamily.contraction F x singleton_have ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
     rw [IdealFamily.contraction]
+    simp
     rw [ground_contraction_card]
+    rfl
+
+lemma nds_contraction_noneuv_lem (CT CN n: ℤ) : CT *2 - CN*(n-1) = -2 + (CT * 2  - CN*(n-1) + n * 2 - (n - 1) - (n - 1)):= by
+  ring_nf
+
+lemma nds_contraction_noneuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hs: F.sets {x}) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets]: --(hx_hyperedge : ¬F.sets (F.ground \ {x})) :
+  (F.contraction x hs geq2).normalized_degree_sum = (F.toSetFamily.contraction x  (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).normalized_degree_sum:=
+by
+  calc
+    (F.contraction x hs geq2).normalized_degree_sum
+        = 2 * (F.contraction x hs geq2).total_size_of_hyperedges - (F.contraction x hs geq2).number_of_hyperedges * Int.ofNat (F.contraction x hs geq2).ground.card := by
+          dsimp [SetFamily.normalized_degree_sum]
+      _ = 2 * (F.contraction x hs geq2).total_size_of_hyperedges - (F.contraction x hs geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp))  geq2).ground.card:= by
+        rw [ground_contraction_ideal_card F x hs geq2]
+        rw [←ground_contraction_card F.toSetFamily x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2]
+        simp_all only [Int.ofNat_eq_coe]
+      _ = 2 * (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).total_size_of_hyperedges - (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp))  geq2).ground.card:= by
+        rw [set_ideal_contraction_num F x hs geq2]
+        rw [set_ideal_contraction_total F x hs geq2]
+      _ = (F.toSetFamily.contraction x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) geq2).normalized_degree_sum := by
+          simp_all only [Int.ofNat_eq_coe]
+          rfl
 
 end Frankl

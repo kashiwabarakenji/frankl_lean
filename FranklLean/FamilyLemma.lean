@@ -466,4 +466,9 @@ lemma total_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
 by
     rfl
 
+lemma nds_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
+  F.normalized_degree_sum = F.toSetFamily.normalized_degree_sum :=
+by
+    rfl
+
 end Frankl
