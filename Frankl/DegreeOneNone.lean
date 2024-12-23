@@ -3,11 +3,11 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Algebra.BigOperators.Group.Finset
 import Init.Data.Int.Lemmas
 import Init.Data.Nat.Lemmas
-import FranklLean.FranklMinors
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
-import FranklLean.FamilyLemma
-import FranklLean.DegreeOneHave
+import Frankl.FranklMinors
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
+import Frankl.FamilyLemma
+import Frankl.DegreeOneHave
 import LeanCopilot
 
 namespace Frankl
@@ -431,7 +431,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
     convert FDel_hand
 
 -- This likely uses the induction hypothesis 'ih', the family 'F', and the chosen vertex 'v'.
-lemma degree_one_nothaveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
+lemma case_degone_noneUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_none: ¬F.sets {v}) (h_uv_not : ¬(F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card = Int.ofNat F.ground.card - 1 → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by

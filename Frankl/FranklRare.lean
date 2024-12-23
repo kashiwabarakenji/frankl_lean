@@ -8,8 +8,8 @@ import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Data.Bool.Basic
 import Init.SimpLemmas
 import Mathlib.Tactic
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
 
 namespace Frankl
 

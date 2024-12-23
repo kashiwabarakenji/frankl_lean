@@ -3,13 +3,13 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Init.Data.Int.Lemmas
 import Init.Data.Nat.Lemmas
-import FranklLean.FranklRare
-import FranklLean.FranklMinors
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
-import FranklLean.DegreeOneHave
-import FranklLean.DegreeOneNone
-import FranklLean.FranklNDS
+import Frankl.FranklRare
+import Frankl.FranklMinors
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
+import Frankl.DegreeOneHave
+import Frankl.DegreeOneNone
+import Frankl.FranklNDS
 import LeanCopilot
 
 namespace Frankl
@@ -17,7 +17,7 @@ namespace Frankl
 variable {α : Type} [DecidableEq α] [Fintype α]
 
 -- For the base case when the ground set size is one
-lemma nonpositive_nds_one (F : IdealFamily α)[DecidablePred F.sets] (h : F.ground.card = 1) : F.normalized_degree_sum ≤ 0 :=
+lemma nds_nonposi_card_one (F : IdealFamily α)[DecidablePred F.sets] (h : F.ground.card = 1) : F.normalized_degree_sum ≤ 0 :=
 by
   obtain ⟨v, hv⟩ := F.nonempty_ground
   have h' : F.ground = ({v} : Finset α) :=
@@ -73,7 +73,7 @@ by
 
 -- Case: U\{v} is a hyperedge scenario
 -- Uses induction hypothesis, and conditions on the contracted and deleted families
-lemma nonpositive_nds_haveUV
+lemma case_hs_haveUV
   (F : IdealFamily α)[DecidablePred F.sets] (v : α) (hs: F.sets {v})(rv: is_rare F.toSetFamily v)(geq2: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], Int.ofNat F'.ground.card = Int.ofNat F.ground.card - 1→ F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
@@ -101,7 +101,7 @@ by
   linarith
 
 -- Case: U\{v} is not a hyperedge scenario
-lemma nonpositive_nds_nothaveUV
+lemma case_hs_noneUV
   (F : IdealFamily α) [DecidablePred F.sets](v : α)(hs: F.sets {v}) (rv: is_rare F.toSetFamily v) (geq2: F.ground.card ≥ 2)(h_uv_not : ¬(F.sets (F.ground \ {v})))
   (ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], Int.ofNat F'.ground.card = Int.ofNat F.ground.card - 1 → F'.normalized_degree_sum  ≤ 0)
   : F.normalized_degree_sum  ≤ 0 := by
@@ -164,7 +164,7 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
       -- Base case: size of the ground set is one
       have h1: F.ground.card = 1 := by
         simp_all only [zero_add]
-      exact nonpositive_nds_one F h1
+      exact nds_nonposi_card_one F h1
     else
       -- Inductive step: size of the ground set is greater than one
       -- existance of a rare element
@@ -215,18 +215,18 @@ theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets]
       by_cases h_uv : F.sets (F.ground \ {v})
       case pos =>
         -- If (U\{v}) is a hyperedge
-        exact nonpositive_nds_haveUV F v h_v rv geq2 h_uv ih'
+        exact case_hs_haveUV F v h_v rv geq2 h_uv ih'
       case neg =>
         -- If (U\{v}) is not a hyperedge
-        exact nonpositive_nds_nothaveUV F v h_v rv geq2 h_uv ih'
+        exact case_hs_noneUV F v h_v rv geq2 h_uv ih'
       -- If {v} is a hyperedge, we have the degree-one case
     case neg =>
       by_cases h_uv : F.sets (F.ground \ {v})
       case pos =>
         -- If (U\{v}) is a hyperedge
-        exact degree_one_haveUV F v rv0.1 geq2 h_v h_uv
+        exact case_degone_haveUV F v rv0.1 geq2 h_v h_uv
       case neg =>
-        exact degree_one_nothaveUV F v rv0.1 geq2 h_v h_uv ih'
+        exact case_degone_noneUV F v rv0.1 geq2 h_v h_uv ih'
 
 --termination_by  (F.ground.card)
 

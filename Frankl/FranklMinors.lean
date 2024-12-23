@@ -1,5 +1,5 @@
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
 import LeanCopilot
 
 namespace Frankl

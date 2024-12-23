@@ -16,7 +16,7 @@ variable {α : Type} [DecidableEq α] [Fintype α]
 --  number_of_hyperedges : F → Int
 --  export Family (degree number_of_hyperedges)
 
-structure SetFamily (α : Type)[DecidableEq α] [Fintype α]:=
+structure SetFamily (α : Type):=
   (ground : Finset α)
   (sets : Finset α → Prop)
   (inc_ground : ∀ s, sets s → s ⊆ ground)

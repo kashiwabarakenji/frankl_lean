@@ -2,9 +2,9 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Init.Data.Int.Lemmas
 import Init.Data.Nat.Lemmas
-import FranklLean.FranklMinors
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
+import Frankl.FranklMinors
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
 import LeanCopilot
 
 --set_option maxHeartbeats 5000000
@@ -667,7 +667,7 @@ lemma transform_inequality {n : Int} (h : 2 ≤ n) :
     rw [hX2]
   simp_all only [ Nat.cast_pow, Nat.cast_ofNat, Nat.cast_add, Nat.cast_one]--
 
-lemma degree_one_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_hyperedge_none: ¬F.sets {v})(h_uv_have : (F.sets (F.ground \ {v})))
+lemma case_degone_haveUV (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground: v ∈ F.ground) (geq2: F.ground.card ≥ 2)(singleton_hyperedge_none: ¬F.sets {v})(h_uv_have : (F.sets (F.ground \ {v})))
   --(ih : ∀ (F' : IdealFamily α)[DecidablePred F'.sets], F'.ground.card < F.ground.card → F'.normalized_degree_sum ≤ 0)
   : F.normalized_degree_sum ≤ 0 :=
 by

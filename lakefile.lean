@@ -8,7 +8,7 @@ package «frankl_lean» where
     "-lctranslate2"
   ]
 
-lean_lib «FranklLean» where
+lean_lib «Frankl» where
   -- add library configuration options here
   --srcDir := "src"
 require mathlib from git

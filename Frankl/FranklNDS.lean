@@ -3,11 +3,11 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Algebra.BigOperators.Group.Finset
 import Init.Data.Int.Lemmas
 import Init.Data.Nat.Lemmas
-import FranklLean.FranklMinors
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
-import FranklLean.FamilyLemma
-import FranklLean.DegreeOneHave
+import Frankl.FranklMinors
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
+import Frankl.FamilyLemma
+import Frankl.DegreeOneHave
 import LeanCopilot
 
 --set_option maxHeartbeats 1000000

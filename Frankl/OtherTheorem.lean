@@ -1,8 +1,8 @@
 import Mathlib.Data.Finset.Basic
 import Init.Data.Int.Lemmas
 import Init.Data.Nat.Lemmas
-import FranklLean.BasicDefinitions
-import FranklLean.BasicLemmas
+import Frankl.BasicDefinitions
+import Frankl.BasicLemmas
 import LeanCopilot
 
 namespace Frankl
