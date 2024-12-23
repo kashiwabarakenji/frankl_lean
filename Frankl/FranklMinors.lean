@@ -687,6 +687,7 @@ by
         simp_all only [Int.ofNat_eq_coe]
         ring_nf
 
+omit [Fintype α] in
 lemma ground_deletion_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
@@ -713,6 +714,7 @@ by
   · intro a_1
     simp_all only [not_false_eq_true, and_self]
 
+omit [Fintype α] in
 lemma ground_contraction_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.contraction F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
@@ -724,6 +726,7 @@ lemma ground_contraction_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) 
     · simp_all only [Finset.one_le_card]
       use x
 
+omit [Fintype α] in
 lemma ground_contraction  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
   (SetFamily.contraction F x hx ground_ge_two).ground = F.ground \ {x} :=
 by

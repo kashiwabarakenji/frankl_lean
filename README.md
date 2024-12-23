@@ -119,3 +119,44 @@ For each case, the number of hyperedges and the total size of hyperedges are exp
 
 #### **Special Case: Degree-One Vertex**
 If \(\{v\}\) is not a hyperedge, the degree of \( v \) is 1. In this scenario, instead of contraction, we consider the trace of \( v \), which results in another Ideal Family. When the degree of \( v \) is 1, tracing \( v \) is equivalent to the specialized deletion operation for Ideal Families.
+
+## Lemma for each case when {v} is a hyperedge
+
+### Lemma about number of hyperedges
+
+{v}がhyperedgeのときのhyperedge数の計算は、FrankNDS.leanの中の
+
+lemma number_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F.ground.card ≥ 2) (vin: v ∈ F.ground)(hs: F.sets {v})
+  [DecidablePred (F.toSetFamily.deletion v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
+F.number_of_hyperedges = (F.toSetFamily.deletion v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
+
+### Lemma about total sum of hyperedge size
+
+lemma total_have{α : Type} [DecidableEq α] [Fintype α]
+  (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets] (singleton_have :F.sets {x}) :
+  F.total_size_of_hyperedges = (F.deletion x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x:=
+
+### Lemma abount normalized degree sum 
+
+theorem nds_set_minors (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+ (hs : F.sets {x}):
+  F.toSetFamily.normalized_degree_sum =
+  (F.toSetFamily.deletion x hx geq2).normalized_degree_sum +
+  (F.toSetFamily.contraction x hx geq2).normalized_degree_sum
+  +2*(F.degree x) - F.number_of_hyperedges :=
+
+### Lemma about normalized degree sum when ground \ {v} is not hyperedges
+lemma nds_deletion_noneuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
+  [DecidablePred F.sets](hx_hyperedge : ¬F.sets (F.ground \ {x})) :
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
+
+lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : α)(hx:x ∈ F.ground)(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges + 1 :=
+
+lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
+
+## Lemmas when {v} is not a hyperedge

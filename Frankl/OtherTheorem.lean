@@ -318,6 +318,7 @@ theorem double_count {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α
 
   norm_cast
 
+set_option linter.unusedVariables false
 lemma normalized_degree_sum_eq_sum_normalized_degree {α : Type} [DecidableEq α] [Fintype α]
   (F : SetFamily α) [DecidablePred F.sets] :
   F.normalized_degree_sum = ∑ x in F.ground, F.normalized_degree x :=
@@ -338,7 +339,7 @@ by
       rw [Finset.sum_mul]
     _ = (∑ x in F.ground, (2*(F.degree x)) : Int) - ((∑ x in F.ground, 1) * (F.number_of_hyperedges : Int)) := by
       simp_all only [Finset.sum_const, nsmul_eq_mul, mul_one]
-    _ = (∑ x in F.ground, (2*(F.degree x)) : Int) - (∑ x in F.ground, (F.number_of_hyperedges) : Int) := by
+    _ = (∑ x in F.ground, (2*(F.degree x)) : Int) - (∑ x in F.ground, (F.number_of_hyperedges): Int) := by
       simp_all only [Finset.sum_const]
       simp_all only [nsmul_eq_mul, mul_one]
     _ = ∑ x in F.ground, ((2*(F.degree x) : Int) - (F.number_of_hyperedges) : Int) := by
@@ -346,7 +347,7 @@ by
         nsmul_eq_mul, Int.cast_natCast, Pi.natCast_def, Finset.sum_sub_distrib, Int.cast_sub]
     _ = ∑ x in F.ground, F.normalized_degree x := by
       simp only [SetFamily.normalized_degree]
-
+set_option linter.unusedVariables true
 -- If the average normalized degree is rare (i.e., non-positive), then there is at least one vertex that is rare.
 -- This is the main theorem of this file.
 theorem average_rare_vertex [Nonempty α][Fintype α](F: SetFamily α) [DecidablePred F.sets] :

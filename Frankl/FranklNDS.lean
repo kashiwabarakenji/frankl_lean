@@ -16,7 +16,7 @@ namespace Frankl
 
 variable {α : Type} [DecidableEq α][Fintype α]
 
-lemma number_nds_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F.ground.card ≥ 2) (vin: v ∈ F.ground)(hs: F.sets {v})
+lemma number_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F.ground.card ≥ 2) (vin: v ∈ F.ground)(hs: F.sets {v})
   [DecidablePred (F.toSetFamily.deletion v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
 F.number_of_hyperedges = (F.toSetFamily.deletion v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
 by
@@ -144,9 +144,9 @@ by
 
 -- Main lemma: contraction_total_size
 lemma contraction_total_size (F : SetFamily α) [DecidablePred F.sets] (x : α)
-  (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)
-  [DecidablePred (F.contraction x hx ground_ge_two).sets] :
-  (F.contraction x hx ground_ge_two).total_size_of_hyperedges =
+  (hx : x ∈ F.ground) (geq2 : F.ground.card ≥ 2)
+  [DecidablePred (F.contraction x hx geq2).sets] :
+  (F.contraction x hx geq2).total_size_of_hyperedges =
     ((Finset.powerset F.ground).filter (λ s => F.sets s ∧ x ∈ s)).sum (λ s => Int.ofNat (Finset.card s) - 1) :=
 by
   -- Step 1: Use the sumbij lemma
@@ -209,11 +209,11 @@ by
   congr
 
 --essentially the same as the previous lemma, but with a different filter
-lemma sum_of_size_eq_degree_plus_contraction_sum (F : SetFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)
-  [DecidablePred (F.contraction x hx ground_ge_two).sets]:
+lemma sum_of_size_eq_degree_plus_contraction_sum (F : SetFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2 : F.ground.card ≥ 2)
+  [DecidablePred (F.contraction x hx geq2).sets]:
  (Finset.filter (λ s => F.sets s ∧ x ∈ s) (Finset.powerset F.ground)).sum Finset.card = F.degree x + (Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (Finset.powerset (F.ground.erase x))).sum Finset.card :=
 by
-  let previous := contraction_total_size F x hx ground_ge_two
+  let previous := contraction_total_size F x hx geq2
   dsimp [SetFamily.total_size_of_hyperedges] at previous
   dsimp [SetFamily.contraction] at previous
   simp at previous
@@ -226,22 +226,22 @@ by
     convert previous
   linarith
 
-lemma hyperedge_totalsize_deletion_contraction{α : Type} [DecidableEq α] [Fintype α]
-  (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2)
+lemma total_have{α : Type} [DecidableEq α] [Fintype α]
+  (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
   [DecidablePred F.sets] (singleton_have :F.sets {x}) :
-  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+  haveI : DecidablePred (F.deletion x hx geq2).sets := by
     dsimp[SetFamily.deletion]
     simp_all only [ge_iff_le]
     infer_instance
-  haveI : DecidablePred (F.contraction x hx ground_ge_two).sets := by
+  haveI : DecidablePred (F.contraction x hx geq2).sets := by
     dsimp [SetFamily.contraction]
     infer_instance
-  F.total_size_of_hyperedges = (F.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.contraction x hx ground_ge_two).total_size_of_hyperedges +  F.degree x:=
+  F.total_size_of_hyperedges = (F.deletion x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x:=
 by
-  haveI : DecidablePred (F.contraction x hx ground_ge_two).sets := by
+  haveI : DecidablePred (F.contraction x hx geq2).sets := by
     dsimp [SetFamily.contraction]
     infer_instance
-  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+  haveI : DecidablePred (F.deletion x hx geq2).sets := by
     dsimp [SetFamily.deletion]
     infer_instance
 
@@ -257,16 +257,16 @@ by
 
 
   have sub3: (Finset.filter (λ s => ∃ H, F.sets H ∧ x ∈ H ∧ s = H.erase x) (Finset.powerset (F.ground.erase x))).sum  (λ s => Int.ofNat (Finset.card s)) =
-     (F.contraction x hx ground_ge_two).total_size_of_hyperedges  := by
+     (F.contraction x hx geq2).total_size_of_hyperedges  := by
     dsimp [SetFamily.total_size_of_hyperedges]
     dsimp [SetFamily.contraction]
     simp
     congr
 
-  haveI : DecidablePred (F.deletion x hx ground_ge_two).sets := by
+  haveI : DecidablePred (F.deletion x hx geq2).sets := by
     dsimp [SetFamily.deletion]
     infer_instance
-  have sub4: (Finset.filter (λ s => F.sets s ∧ x  ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))= (F.deletion x hx ground_ge_two).total_size_of_hyperedges := by
+  have sub4: (Finset.filter (λ s => F.sets s ∧ x  ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))= (F.deletion x hx geq2).total_size_of_hyperedges := by
     dsimp [SetFamily.total_size_of_hyperedges]
     dsimp [SetFamily.deletion]
     simp
@@ -290,18 +290,18 @@ by
           (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum Finset.card := by
 
             rw [sum_of_size_eq_degree_plus_contraction_sum F x]
-      _  = F.degree x + (F.contraction x hx ground_ge_two).total_size_of_hyperedges
+      _  = F.degree x + (F.contraction x hx geq2).total_size_of_hyperedges
               + (Finset.filter (λ s => F.sets s ∧ x ∉ s) (Finset.powerset F.ground)).sum Finset.card := by
             rw [←sub3]
             simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
-      _  = F.degree x +  (F.contraction x hx ground_ge_two).total_size_of_hyperedges  +
-          (F.deletion x hx ground_ge_two).total_size_of_hyperedges  := by
+      _  = F.degree x +  (F.contraction x hx geq2).total_size_of_hyperedges  +
+          (F.deletion x hx geq2).total_size_of_hyperedges  := by
             rw [←sub4]
             simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
-      _  = (F.deletion x hx ground_ge_two).total_size_of_hyperedges  +
-          (F.contraction x hx ground_ge_two).total_size_of_hyperedges  + F.degree x := by
+      _  = (F.deletion x hx geq2).total_size_of_hyperedges  +
+          (F.contraction x hx geq2).total_size_of_hyperedges  + F.degree x := by
             ring_nf
-      _  = (F.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.contraction x hx ground_ge_two).total_size_of_hyperedges +  F.degree x := by
+      _  = (F.deletion x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x := by
             ring_nf
 
   congr
@@ -313,9 +313,7 @@ by
   ring_nf
 
 theorem nds_set_minors (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
- (hs : F.sets {x})--(hx_hyperedge : F.sets (F.ground \ {x}))
-   --[DecidablePred (F.toSetFamily.deletion x hx geq2).sets] [DecidablePred (F.toSetFamily.contraction x hx geq2).sets]
-   :
+ (hs : F.sets {x}):
   F.toSetFamily.normalized_degree_sum =
   (F.toSetFamily.deletion x hx geq2).normalized_degree_sum +
   (F.toSetFamily.contraction x hx geq2).normalized_degree_sum
@@ -325,8 +323,8 @@ by
   haveI : DecidablePred (F.contraction x hs geq2).sets := by
     dsimp [IdealFamily.contraction]
     infer_instance
-  have number := number_nds_have F x geq2 hx hs
-  have total := hyperedge_totalsize_deletion_contraction F.toSetFamily x hx geq2 hs
+  have number := number_have F x geq2 hx hs
+  have total := total_have F.toSetFamily x hx geq2 hs
   rw [total]
   rw [number]
 

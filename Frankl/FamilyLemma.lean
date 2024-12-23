@@ -61,6 +61,7 @@ by
   · intro _
     linarith
 
+omit [Fintype α] in
 lemma family_union (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s => F.sets s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∈ s) (F.ground).powerset ∪ Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground).powerset:=
 by
   ext1 a
@@ -95,6 +96,7 @@ by
   simp_rw [Finset.filter_congr this] at result
   exact result
 
+omit [Fintype α] in
 lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filter (fun s =>F.sets s ∧ v ∉ s) F.ground.powerset = Finset.filter (fun s =>F.sets s ∧ v ∉ s) (F.ground \ {v}).powerset := by
       ext1 s
       apply Iff.intro
@@ -134,6 +136,7 @@ lemma number_ground (F:SetFamily α)[DecidablePred F.sets] (v : α): Finset.filt
           exact a.1.1
         · exact a.2
 
+omit [Fintype α] in
 lemma filter_sum_eq (F : SetFamily α) (x : α)  [DecidablePred F.sets] :
   (Finset.filter (λ s => F.sets s ∧ x ∉ s) F.ground.powerset).sum Finset.card =
   (Finset.filter (λ s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum Finset.card :=
@@ -172,6 +175,7 @@ by
 
   simp only [Finset.mem_filter, Finset.mem_powerset]
 
+omit [Fintype α] in
 lemma filter_sum_eq_int (F : SetFamily α) (x : α)  [DecidablePred F.sets] :
   (Finset.filter (fun s => F.sets s ∧ x ∉ s) F.ground.powerset).sum (fun (s: Finset α) => Int.ofNat s.card) = (Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum (fun (s: Finset α) => Int.ofNat s.card):=
 by
@@ -389,7 +393,7 @@ by
   rw [Fintype.card_coe range] at result
   simp_all only [domain, range]
 
-/--
+/-
 A small lemma that splits the sum over a union of two disjoint finsets.
 -/
 lemma sum_union_disjoint {α β : Type*} [AddCommMonoid β] [DecidableEq α]
@@ -397,10 +401,12 @@ lemma sum_union_disjoint {α β : Type*} [AddCommMonoid β] [DecidableEq α]
   (s₁ ∪ s₂).sum f = s₁.sum f + s₂.sum f :=
 Finset.sum_union h
 
-/--
+/-
 This lemma partitions the hyperedges of `F` by whether they contain `v` or not, and shows that
 the total size of hyperedges is preserved after this partition.
 -/
+
+omit [Fintype α] in
 lemma sum_partition_by_v (F : SetFamily α) (v : α) [DecidablePred F.sets] :
   {F with sets := λ s => F.sets s ∧ v ∈ s, inc_ground := λ s hs => F.inc_ground s hs.1 }.total_size_of_hyperedges  +
   {F with sets := λ s => F.sets s ∧ v ∉ s, inc_ground := λ s hs => F.inc_ground s hs.1 }.total_size_of_hyperedges  =
