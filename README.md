@@ -208,7 +208,7 @@ This version was selected because it supports Lean Copilot, which was utilized d
 
 You can clone the repository locally with the following command:
 ```bash
-git clone https://github.com/kashiwabarakenji/ideal_frankl.git
+git clone https://github.com/kashiwabarakenji/frankl_lean.git
 ```
 If you already have Lean installed via elan, you can set up the project as follows:
 
