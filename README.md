@@ -64,8 +64,8 @@ noncomputable def SetFamily.total_size_of_hyperedges (F : SetFamily α)  [Decida
    Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)
 
 -- Number of hyperedges
-noncomputable def SetFamily.normalized_degree {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets] (x: α): ℤ :=
-  2 * (F.degree x:Int) - (F.number_of_hyperedges:Int)
+noncomputable def SetFamily.number_of_hyperedges  (F : SetFamily α) [DecidablePred F.sets]: Int :=
+  Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s ) (F.ground.powerset)))
 
 -- Normalized degree sum
 noncomputable def SetFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets]: ℤ :=
