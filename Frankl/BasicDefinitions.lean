@@ -52,7 +52,7 @@ def isIdealFamily (F: SetFamily α) : Prop :=
   (∀ A B : Finset α, F.sets B → B ≠ F.ground → A ⊆ B → F.sets A)  -- Downward closure
 
 -- A predicate to check if an IdealFamily is intersection-closed.
-def isIntersectionClosedFamily  (F : IdealFamily α) : Prop :=
+def isIntersectionClosedFamily  (F : SetFamily α) : Prop :=
   ∀ {s t : Finset α}, F.sets s → F.sets t → F.sets (s ∩ t)
 
 def is_rare (F : SetFamily α) (v : α)  [DecidablePred F.sets]  : Prop :=

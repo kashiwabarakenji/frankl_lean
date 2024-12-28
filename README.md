@@ -199,7 +199,10 @@ The Lean files are located in the Frankl folder of this repository.
 - **DegreeOneHave.lean**: Case where \(\{v\}\) is not a hyperedge, but \(\text{ground} \setminus \{v\}\) is a hyperedge.
 - **DegreeOneNone.lean**: Case where neither \(\{v\}\) nor \(\text{ground} \setminus \{v\}\) are hyperedges.
 - **FranklRare.lean**: Proof that Ideal Families have a rare vertex.
-- **OtherTheorem.lean**: Theorems not used in the proof of the main theorem. Includes proofs that ideal families are closed under intersection and that being rare on average implies the existence of a rare vertex.
+- **OtherTheorem.lean**: Theorems not used in the proof of the main theorem. 
+1. Ideal families are closed under intersection.
+2. Being rare on average implies the existence of a rare vertex.
+3. In the frankl's conjecture, the equivalence between the assumption that the cardinality of members is at least two and the existence of the ground set as a hyperedge.
 
 # Lean Environment
 

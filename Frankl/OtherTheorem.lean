@@ -13,7 +13,7 @@ variable {α : Type} [DecidableEq α]
 
 -- A theorem stating that every IdealFamily is intersection-closed.
 theorem idealFamily_is_intersectionClosed {α : Type} [DecidableEq α] [Fintype α] (family : IdealFamily α) :
-  isIntersectionClosedFamily family := by
+  isIntersectionClosedFamily family.toSetFamily := by
   unfold isIntersectionClosedFamily
   intros s t hs ht
   match Decidable.em (s = family.ground) with
@@ -373,3 +373,323 @@ theorem average_rare_vertex [Nonempty α][Fintype α](F: SetFamily α) [Decidabl
   exact hx
   dsimp [SetFamily.normalized_degree]
   exact h4
+-----------------------------------------------------------------------------------------
+  theorem frankl_conjecture_equiv_by_contradiction :
+  (∀ (F : SetFamily α) [DecidablePred F.sets],
+    (F.sets ∅) →
+    (F.sets F.ground) →
+    isIntersectionClosedFamily F →
+    ∃ (v:α), v ∈ F.ground ∧ 2 * F.degree v ≤ F.number_of_hyperedges)
+  ↔
+  (∀ (F : SetFamily α)[DecidablePred F.sets],
+     (F.sets ∅) →
+    F.number_of_hyperedges ≥ 2 →
+    isIntersectionClosedFamily F →
+    ∃ (v:α), v ∈ F.ground ∧ 2 * F.degree v ≤ F.number_of_hyperedges) :=
+by
+  constructor
+  · intro h1 F deci hempty huniv hclosed
+    let F' : SetFamily α :=
+    {
+      ground := F.ground,
+      sets := fun s => (F.sets s) ∨ s = F.ground,
+      inc_ground := fun s hs => by
+        cases hs with
+        | inl h => exact F.inc_ground s h
+        | inr h => subst h; simp_all only [ge_iff_le, not_exists, not_and, not_le, subset_refl]
+      nonempty_ground := F.nonempty_ground
+    }
+    have hempty' : F'.sets ∅ := by
+      left
+      exact hempty
+
+    have hground: F'.sets F'.ground := by
+      right
+      rfl
+    dsimp [isIntersectionClosedFamily] at hclosed
+    have hclosed': isIntersectionClosedFamily F' := by
+      intros s t hs ht
+      dsimp [SetFamily.sets] at hs ht
+      cases hs with
+      | inl hs =>
+        cases ht with
+        | inl ht =>
+          left
+          exact hclosed hs ht
+        | inr ht =>
+          left
+          subst ht
+          simp_all only [Finset.inter_self]
+          have: s ⊆ F.ground := F.inc_ground s hs
+          have: s ∩ F.ground = s := by simp_all only [ge_iff_le, not_exists, not_and, not_le, true_or, or_true,
+            Finset.inter_eq_left]
+          rw [this]
+          exact hs
+      | inr hs => cases ht with
+        | inl ht =>
+          left
+          subst hs
+          have:t ⊆ F.ground := F.inc_ground t ht
+          have: F.ground ∩ t  = t := by simp_all only [ge_iff_le, not_exists, not_and, not_le, true_or, or_true,
+            Finset.inter_eq_right]
+          rw [this]
+          exact ht
+        | inr ht =>
+          right
+          subst ht
+          simp_all only [Finset.inter_self]
+    have h := h1 F' hempty' hground hclosed'
+    obtain ⟨v, vg, vineq⟩ := h
+    use v
+    constructor
+    exact vg
+    by_cases h:F.sets F.ground
+    case pos =>
+      have: F.degree v = F'.degree v := by
+        simp only [SetFamily.degree]
+        simp_all only [ge_iff_le, true_or, or_self, Int.ofNat_eq_coe, Nat.cast_inj, F']
+        congr
+        ext x : 2
+        simp_all only [and_congr_left_iff, iff_self_or, implies_true]
+      rw [this]
+      have num_eq: F.number_of_hyperedges = F'.number_of_hyperedges :=
+      by
+        simp only [SetFamily.number_of_hyperedges]
+        simp_all only [ge_iff_le, true_or, or_self, Int.ofNat_eq_coe, Nat.cast_inj, F']
+        congr
+        ext x : 2
+        simp_all only [iff_self_or, implies_true]
+      rw [num_eq]
+      exact vineq
+
+    case neg =>
+      have degeq : F.degree v = F'.degree v - 1:= by
+        simp only [SetFamily.degree]
+        have add_comp:= add_compl F.ground.powerset (λ s => F.sets s ∧ v ∈ s ∨ s = F.ground) (λ s => s = F.ground)
+        have sub1: ∀ s:Finset α, (((F.sets s  ∨ s = F.ground) ∧ s = F.ground) ∧ v ∈ s) ↔ s = F.ground :=
+        by
+          intro s
+          constructor
+          tauto
+          intro hh
+          rw [hh]
+          constructor
+          subst hh
+          simp_all only [ge_iff_le, true_or, or_true, and_self, F']
+          subst hh
+          simp_all only [ge_iff_le, true_or, or_true, F']
+
+        have sub2: ∀ s:Finset α, (F.sets s ∧ v ∈ s ∨ s = F.ground) ∧ s ≠ F.ground ↔ F.sets s ∧ v ∈ s:=
+        by
+          intro s
+          apply Iff.intro
+          intro a
+          simp_all only [ge_iff_le, true_or, or_true, or_self_right, and_iff_right_iff_imp, implies_true, ne_eq,
+            or_false]
+          obtain ⟨left, right⟩ := a
+          simp_all only [or_false]
+          trivial
+
+          intro hh
+          constructor
+          left
+          simp_all only [ge_iff_le, true_or, or_true, or_self_right, and_iff_right_iff_imp, implies_true, F']
+          simp
+          by_contra hcontra
+          rw [hcontra] at hh
+          let hh1:= hh.1
+          contradiction
+
+        have sub3:  (Finset.filter (fun s => ((F.sets s ∧ v ∈ s) ∨ s = F.ground) ∧ s = F.ground) F.ground.powerset) =  (Finset.filter (fun s => s = F.ground) F.ground.powerset) :=
+        by
+          simp_all only [ge_iff_le, true_or, or_true, and_iff_right_iff_imp, implies_true, ne_eq, F']
+          ext1 a
+          simp_all only [Finset.mem_filter, Finset.mem_powerset, and_congr_right_iff, and_iff_right_iff_imp, or_true,
+            implies_true]
+        have sub4: (Finset.filter (fun s => ((F.sets s ∧ v ∈ s)∨ s = F.ground) ∧ s ≠ F.ground) F.ground.powerset) =  (Finset.filter (fun s => F.sets s ∧ v ∈ s) F.ground.powerset) :=
+        by
+          simp_all only [ge_iff_le, true_or, or_true, and_iff_right_iff_imp, implies_true, ne_eq, F']
+
+        rw [sub3, sub4] at add_comp
+
+        have sub5: (Finset.filter (fun s => s = F.ground) F.ground.powerset).card = 1 :=
+        by
+          simp_all only [ge_iff_le, true_or, or_true, and_iff_right_iff_imp, implies_true, ne_eq, F']
+          rw [Finset.filter_eq']
+          simp_all only [Finset.mem_powerset, subset_refl, ↓reduceIte, Finset.card_singleton]
+
+        rw [sub5] at add_comp
+        --ring_nf at add_comp
+        --symm at add_comp
+        rw [add_comm] at add_comp
+        have :Finset.filter (fun s => F.sets s ∧ v ∈ s ∨ s = F.ground) F.ground.powerset = Finset.filter (fun s => (F.sets s ∨ s = F.ground) ∧ v ∈ s) F.ground.powerset :=
+        by
+          ext s
+          simp_all only [Finset.mem_filter, Finset.mem_powerset, and_congr_right_iff, and_iff_right_iff_imp, or_true,
+            implies_true]
+          intro ss
+          apply Iff.intro
+          intro a
+          simp_all only [ge_iff_le, true_or, ne_eq, F']
+          cases a with
+          | inl h_1 => simp_all only [true_or, and_self]
+          | inr h_2 =>
+            subst h_2
+            simp_all only [subset_refl, or_true, and_self]
+
+          intro a
+          simp_all only [ge_iff_le, true_or, ne_eq, and_true, F']
+
+        rw [this] at add_comp
+
+        let add_comp_d:= add_compl F.ground.powerset (λ s => F.sets s∧ v ∈ s) (λ s => s = F.ground)
+
+        have subd1: ∀ s:Finset α, ¬((F.sets s∧ v ∈ s) ∧ s = F.ground) :=
+        by
+          intro s
+          by_contra hcontra
+          let h1 := hcontra.1
+          rw [hcontra.2] at h1
+          let h11 := h1.1
+          contradiction
+
+        have subd2: ∀ s:Finset α, (F.sets s ∧ v ∈ s ) ∧ s ≠ F.ground ↔ F.sets s∧ v ∈ s :=
+        by
+          intro s
+          apply Iff.intro
+          intro a
+          simp_all only [or_false]
+          trivial
+
+          intro hh
+          constructor
+          exact hh
+          by_contra hcontra
+          rw [hcontra] at hh
+          let hh1:= hh.1
+          contradiction
+
+        have subd3:  (Finset.filter (fun s => (F.sets s ∧ v ∈ s ) ∧ s = F.ground) F.ground.powerset) =  ∅  :=
+        by
+          by_contra hcontra
+          have :(Finset.filter (fun s => (F.sets s ∧ v ∈ s) ∧ s = F.ground) F.ground.powerset).Nonempty :=
+          by
+            exact Finset.nonempty_iff_ne_empty.mpr hcontra
+          obtain ⟨s, hs⟩ := this
+          rw [Finset.mem_filter] at hs
+          let hs2 := hs.2.1
+          let hs3 := hs.2.2
+          rw [hs3] at hs2
+          let hs21 := hs2.1
+          contradiction
+
+        have subd4: (Finset.filter (fun s => (F.sets s ∧ v ∈ s) ∧ s ≠ F.ground) F.ground.powerset) =  (Finset.filter (fun s => F.sets s ∧ v ∈ s) F.ground.powerset) :=
+        by
+          ext s
+          apply Iff.intro
+          intro hs
+          rw [ Finset.mem_filter] at hs
+          rw [Finset.mem_filter]
+          constructor
+          exact hs.1
+          exact hs.2.1
+
+          intro hs
+          rw [ Finset.mem_filter] at hs
+          rw [Finset.mem_filter]
+          constructor
+          exact hs.1
+          constructor
+          exact hs.2
+
+          by_contra hcontra
+          let hs2 := hs.2
+          rw [hcontra] at hs2
+          let hs21 := hs2.1
+          contradiction
+
+        rw [subd3, subd4] at add_comp_d
+
+        clear subd1 subd2 subd3 subd4 sub1 sub2 sub3 sub4 sub5
+
+        rw [add_comp]
+        rw [add_comp_d]
+        rw [Finset.card_empty]
+        simp
+        --lemma add_compl {α : Type} [DecidableEq α] (X : Finset α) (P Q : α → Prop) [DecidablePred P] [DecidablePred Q] :
+        --(Finset.filter P X).card = (Finset.filter (λ s => P s ∧ Q s) X).card + (Finset.filter (λ s => P s ∧ ¬Q s) X).card
+      rw [degeq]
+      have numeq : F.number_of_hyperedges = F'.number_of_hyperedges - 1 := by
+        simp only [SetFamily.number_of_hyperedges]
+        have : Finset.filter (fun s => (F.sets s ∨ s = F.ground)) F.ground.powerset = insert (F.ground: (Finset α)) (Finset.filter (fun s => F.sets s ) F.ground.powerset) := by
+          simp_all only [ge_iff_le, true_or, or_true, F']
+          ext1 a
+          simp_all only [Finset.mem_filter, Finset.mem_powerset, Finset.mem_insert]
+          apply Iff.intro
+          · intro a_1
+            simp_all only [true_and]
+            obtain ⟨left, right⟩ := a_1
+            cases right with
+            | inl h_1 => simp_all only [or_true]
+            | inr h_2 =>
+              subst h_2
+              simp_all only [subset_refl, or_false]
+          · intro a_1
+            cases a_1 with
+            | inl h_1 =>
+              subst h_1
+              simp_all only [subset_refl, or_true, and_self]
+            | inr h_2 => simp_all only [true_or, and_self]
+        rw [this]
+        simp_all only [Int.ofNat_eq_coe, Finset.mem_filter,and_false, not_false_eq_true, Finset.card_insert_of_not_mem, Nat.cast_add, Nat.cast_one,add_sub_cancel_right]--
+      have _: F.degree v ≤ F.number_of_hyperedges :=
+      by
+        rw [degeq]
+        rw [numeq]
+        linarith
+      rw [numeq]
+      linarith
+
+  · intro h2 F deci hempty hnum hclosed
+    have hnum2: F.number_of_hyperedges ≥ 2 := by
+      dsimp [SetFamily.number_of_hyperedges]
+      have : ∅ ∈ Finset.filter F.sets F.ground.powerset := by
+        simp [hempty]
+      have : F.ground ∈ Finset.filter F.sets F.ground.powerset := by
+        simp [hnum]
+      have : ∅ ≠ F.ground := by
+        intro h
+        have := F.nonempty_ground
+        simp [← h] at this
+      have inc_lem: {∅,F.ground} ⊆ F.ground.powerset := by
+        intros x hx
+        simp_all only [Finset.mem_insert, Finset.mem_singleton, Finset.mem_powerset]--
+        cases hx with
+        | inl h =>
+          subst h
+          simp_all only [Finset.empty_subset]
+        | inr h_1 =>
+          subst h_1
+          simp_all only [subset_refl]
+      have inc2_lem: {∅,F.ground} ⊆ F.ground.powerset.filter F.sets := by
+        simp_all only [Finset.subset_iff]
+        intros x hx
+        simp_all only [Finset.mem_insert, Finset.mem_singleton]--
+        cases hx with
+        | inl h =>
+          subst h
+          simp_all only [Finset.mem_filter]
+          constructor
+          simp_all only [and_self]
+          simp_all only [and_self]
+        | inr h_1 =>
+          subst h_1
+          simp_all only [Finset.mem_filter]
+          constructor
+          simp_all only [and_self]
+          simp_all only [and_self]
+      have : ({∅,F.ground}:Finset (Finset α)).card <= (F.ground.powerset.filter F.sets).card := by
+        apply Finset.card_le_card
+        exact inc2_lem
+      simp_all only [Finset.mem_singleton, not_false_eq_true, Finset.card_insert_of_not_mem, Finset.card_singleton,Nat.ofNat_le_cast]--
+    simp_all only [ge_iff_le]
