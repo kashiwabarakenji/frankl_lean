@@ -3,12 +3,13 @@ open Lake DSL
 
 package «frankl_lean» where
   -- add package configuration options here
+    srcDir := "Frankl"
     moreLinkArgs := #[
     "-L./.lake/packages/LeanCopilot/.lake/build/lib",
     "-lctranslate2"
     ]
 
-lean_lib «Frankl» where
+--lean_lib «Frankl» where
   -- add library configuration options here
   --srcDir := "src"
 require mathlib from git
