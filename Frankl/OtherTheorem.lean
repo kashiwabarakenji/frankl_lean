@@ -1,6 +1,6 @@
 import Mathlib.Data.Finset.Basic
-import Init.Data.Int.Lemmas
-import Init.Data.Nat.Lemmas
+--import Init.Data.Int.Lemmas
+--import Init.Data.Nat.Lemmas
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
 import LeanCopilot

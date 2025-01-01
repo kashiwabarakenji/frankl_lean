@@ -1,7 +1,7 @@
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Finset.Card
-import Init.Data.Int.Lemmas
-import Init.Data.Nat.Lemmas
+--import Mathlib.Data.Finset.Basic
+--import Mathlib.Data.Finset.Card
+--import Init.Data.Int.Lemmas
+--import Init.Data.Nat.Lemmas
 import Frankl.FranklMinors
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
@@ -126,7 +126,7 @@ lemma hyperedges_not_through_v {α : Type} [DecidableEq α] [Fintype α]
   rw [deg1] at deg2
   contradiction
 
-lemma total_degone_card {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets] (v : α) (hv: v ∈ F.ground) (deg1: F.degree v = 1) (hasGround: F.sets F.ground)(ground_ge_two: F.ground.card ≥ 2) :
+lemma total_degone_card {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets] (v : α) (hv: v ∈ F.ground) (deg1: F.degree v = 1) (hasGround: F.sets F.ground):--(ground_ge_two: F.ground.card ≥ 2) :
   F.total_size_of_hyperedges = (F.ground.powerset.filter (λ s => F.sets s ∧ v ∉ s )).sum Finset.card + F.ground.card := by
   rw [SetFamily.total_size_of_hyperedges]
   simp
@@ -152,7 +152,7 @@ lemma total_degone_card {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily
     tauto
 
   have card_sum: (Finset.filter (λ s => F.sets s) (F.ground.powerset)).sum Finset.card = (Finset.filter (λ s => F.sets s ∧ v ∉ s ) (F.ground.powerset)).sum Finset.card + F.ground.card := by
-    simp_all only [ge_iff_le, Finset.disjoint_singleton_right]
+    --simp_all only [ge_iff_le, Finset.disjoint_singleton_right]
     symm
     rw [← union_lem, Finset.sum_union]--
     · rw [Finset.sum_singleton]
@@ -413,7 +413,7 @@ lemma count_subsets_containing_a {α : Type} [DecidableEq α][Fintype α]
 
 -- Lemma to swap the order of summation.
 lemma sum_card_powerset_eq_sum_subsets_containing {α : Type} [DecidableEq α] [Fintype α] {FG : Finset α} :
-  FG.powerset.sum (λ s => ∑ a ∈ s, 1) = FG.sum (λ a => (FG.powerset.filter (λ S => a ∈ S)).card) := by
+  FG.powerset.sum (λ s => ∑ _ ∈ s, 1) = FG.sum (λ a => (FG.powerset.filter (λ S => a ∈ S)).card) := by
   let fn (a : α) (s : Finset α): Nat := if a ∈ s then 1 else 0
 
   have rewrite : ∑ a ∈ FG, (Finset.filter (fun S => a ∈ S) FG.powerset).card = ∑ a ∈ FG, ∑ x ∈ (Finset.filter (fun S => a ∈ S) FG.powerset), 1 := by
@@ -470,7 +470,7 @@ lemma ground_minus_v_ideal_total {α : Type} [DecidableEq α] [Fintype α] (F : 
         have degree_one: F.degree v = 1 := by
             exact degree_one_if_not_hyperedge F hv hv_singleton
         have total_lem2: F.total_size_of_hyperedges = (F.ground.powerset.filter (λ s => F.sets s ∧ v ∉ s )).sum Finset.card + F.ground.card := by
-          exact total_degone_card F.toSetFamily v hv degree_one F.has_ground hcard0
+          exact total_degone_card F.toSetFamily v hv degree_one F.has_ground
         rw [total_lem2]
 
         simp_all only [add_left_inj]
@@ -685,6 +685,7 @@ by
       -- Base case: n = 0 does not apply here.
       by_contra _
       simp_all only [nonpos_iff_eq_zero]
+      simp_all only [tsub_zero, one_ne_zero]
     | succ k ih =>
       rw [pow_succ 2 k]
       simp_all

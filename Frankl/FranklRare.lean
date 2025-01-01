@@ -1,13 +1,13 @@
 --the main theorem of this file is ideal_version_of_frankl_conjecture
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
-import Mathlib.Data.Fintype.Basic
-import Mathlib.Data.Fintype.Card
-import Mathlib.Data.Finset.Powerset
-import Mathlib.Init.Data.Nat.Lemmas
-import Mathlib.Data.Bool.Basic
-import Init.SimpLemmas
-import Mathlib.Tactic
+--import Mathlib.Data.Fintype.Basic
+--import Mathlib.Data.Fintype.Card
+--import Mathlib.Data.Finset.Powerset
+--import Mathlib.Init.Data.Nat.Lemmas
+--import Mathlib.Data.Bool.Basic
+--import Init.SimpLemmas
+--import Mathlib.Tactic
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
 

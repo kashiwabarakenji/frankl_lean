@@ -2,7 +2,7 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
-import Mathlib.Init.Data.Nat.Lemmas
+--import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Algebra.BigOperators.Group.Finset
 import LeanCopilot
 

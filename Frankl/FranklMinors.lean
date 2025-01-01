@@ -354,7 +354,7 @@ lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(groun
    · intro a_1
      simp_all only [not_false_eq_true, and_self]
 
-lemma ideal_deletion_noneuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x}))) :
+lemma ideal_deletion_noneuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) :--(h_uv_none : ¬(F.sets (F.ground \ {x}))) :
   ∀ s : Finset α , s ≠ F.ground \ {x} → ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
 by
   intro s hns
@@ -489,13 +489,13 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
           rw [h_eq] at a
           rw [Finset.erase_eq] at a
           exact h_uv_none a.1
-    haveI : DecidablePred (λ s => P s ∧ Q s) := by
-      intro s
-      exact And.decidable
+    --haveI : DecidablePred (λ s => P s ∧ Q s) := by
+    --  intro s
+    --  exact And.decidable
 
-    haveI : DecidablePred (λ s => P s ∧ ¬ Q s) := by
-      intro s
-      exact And.decidable
+    --haveI : DecidablePred (λ s => P s ∧ ¬ Q s) := by
+    --  intro s
+    --  exact And.decidable
 
     have left_hand': (Finset.filter (fun s => F.sets s ∧ x ∉ s ∨ s = F.ground.erase x) (F.ground.erase x).powerset).card =
     (Finset.filter (fun s => (s = F.ground.erase x) )  (F.ground.erase x).powerset).card +
@@ -561,23 +561,23 @@ by
         rw [Finset.erase_eq] at a
         exact h_uv_none a.1
 
-  haveI : DecidablePred (λ s => P s ∧ Q s) := by
-    intro s
-    exact And.decidable
+  --haveI : DecidablePred (λ s => P s ∧ Q s) := by
+  --  intro s
+  --  exact And.decidable
 
-  haveI : DecidablePred (λ s => P s ∧ ¬ Q s) := by
-    intro s
-    exact And.decidable
+  --haveI : DecidablePred (λ s => P s ∧ ¬ Q s) := by
+  --  intro s
+  --  exact And.decidable
 
   have left_hand': (Finset.filter (fun s => F.sets s ∧ x ∉ s ∨ s = F.ground.erase x) (F.ground.erase x).powerset).sum Finset.card =
     (Finset.filter (fun s => (s = F.ground.erase x) )  (F.ground.erase x).powerset).sum Finset.card +
     (Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).sum Finset.card := by
-      haveI : DecidablePred (fun s => F.sets s ∧ x ∉ s) := by
-        intro s
-        exact And.decidable
+      --haveI : DecidablePred (fun s => F.sets s ∧ x ∉ s) := by
+      --  intro s
+      --  exact And.decidable
       simp_all
-      simp_all only [Q]
-      congr
+      --simp_all only [Q]
+      --congr
 
   have :  (Finset.filter (fun s => (s = F.ground.erase x)) (F.ground.erase x).powerset).sum Finset.card = F.ground.card - 1 := by
     have lem: (F.ground \ {x}).card = F.ground.card - 1 := by

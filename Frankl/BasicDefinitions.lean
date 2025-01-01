@@ -2,10 +2,10 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
-import Mathlib.Init.Data.Nat.Lemmas
+--import Mathlib.Init.Data.Nat.Lemmas
 import Mathlib.Data.Bool.Basic
 import Mathlib.Tactic
-import LeanCopilot
+--import LeanCopilot
 
 namespace Frankl
 
@@ -16,7 +16,7 @@ variable {α : Type} [DecidableEq α] [Fintype α]
 --  number_of_hyperedges : F → Int
 --  export Family (degree number_of_hyperedges)
 
-structure SetFamily (α : Type):=
+structure SetFamily (α : Type) where
   (ground : Finset α)
   (sets : Finset α → Prop)
   (inc_ground : ∀ s, sets s → s ⊆ ground)
@@ -38,7 +38,7 @@ noncomputable def SetFamily.normalized_degree {α : Type} [DecidableEq α] [Fint
 noncomputable def SetFamily.normalized_degree_sum {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets]: ℤ :=
   2 * (F.total_size_of_hyperedges:Int) - (F.number_of_hyperedges:Int)*(F.ground.card:Int)
 
-structure IdealFamily  (α : Type) [DecidableEq α] [Fintype α] extends SetFamily α :=
+structure IdealFamily  (α : Type) [DecidableEq α] [Fintype α] extends SetFamily α where
   (has_empty : sets ∅)
   (has_ground : sets ground)
   (down_closed : ∀ (A B : Finset α), sets B → B ≠ ground → A ⊆ B → sets A)
