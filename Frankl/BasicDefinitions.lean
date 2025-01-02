@@ -11,11 +11,6 @@ namespace Frankl
 
 variable {α : Type} [DecidableEq α] [Fintype α]
 
---class Family (F : Type u) (α : Type) where
---  degree : F → α → Int
---  number_of_hyperedges : F → Int
---  export Family (degree number_of_hyperedges)
-
 structure SetFamily (α : Type) where
   (ground : Finset α)
   (sets : Finset α → Prop)

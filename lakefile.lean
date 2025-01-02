@@ -4,6 +4,7 @@ open Lake DSL
 package «frankl_lean» where
   -- add package configuration options here
     srcDir := "Frankl"
+
     moreLinkArgs := #[
     "-L./.lake/packages/LeanCopilot/.lake/build/lib",
     "-lctranslate2"
@@ -17,6 +18,7 @@ require mathlib from git
 require LeanCopilot from git
   "https://github.com/lean-dojo/LeanCopilot.git" @ "v4.14.0" --"main" --
 
---@[default_target] コメントアウトを外すとlake buildでエラー。
+@[default_target]
+lean_lib «frankl_lean» where
 --lean_exe «frankl_lean» where
---  root := `Frankl
+  roots:= #[`FranklMain]
