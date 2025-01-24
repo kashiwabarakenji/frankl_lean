@@ -1,8 +1,6 @@
 --import Mathlib.Data.Finset.Basic
 --import Mathlib.Data.Finset.Card
 --import Mathlib.Algebra.BigOperators.Group.Finset
---import Init.Data.Int.Lemmas
---import Init.Data.Nat.Lemmas
 import Frankl.FranklMinors
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas

@@ -4,7 +4,6 @@ import Mathlib.Data.Finset.Card
 --import Mathlib.Data.Fintype.Basic
 --import Mathlib.Data.Fintype.Card
 --import Mathlib.Data.Finset.Powerset
---import Mathlib.Init.Data.Nat.Lemmas
 --import Mathlib.Data.Bool.Basic
 --import Init.SimpLemmas
 --import Mathlib.Tactic
