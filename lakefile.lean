@@ -14,7 +14,7 @@ package «Frankl» where
 lean_lib «Frankl» where
  -- add library configuration options here
  --srcDir := "Frankl"
- roots := #[`Frankl.FranklMain]
+ --roots := #[`Frankl.FranklMain] --ここを指定するとうまくoleanファイルが出来てくれない。lake buildでbuildできないのでVS Codeでひとつずつコンパイル。
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"  @  "v4.16.0" -- "v4.15.0-rc1" --"v4.11.0" -- "v4.8.0"

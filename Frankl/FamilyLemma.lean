@@ -43,7 +43,7 @@ by
     exact F.has_ground
   have h_sum: Finset.sum {F.ground} Finset.card  ≤ Finset.sum (Finset.filter F.sets F.ground.powerset) Finset.card:= by
     rw [Finset.sum_singleton]
-    exact @Finset.sum_le_sum_of_subset _ _ _ Finset.card _ _ h_mem
+    exact @Finset.sum_le_sum_of_subset _ _ _ _ Finset.card _ _ h_mem
 
   have h_total : Finset.sum ({F.ground}) Finset.card = F.ground.card := by
     simp_all only [Finset.sum_singleton, Finset.card_singleton]
@@ -451,6 +451,7 @@ by
 
   -- Combine everything
   simp_all only [Int.ofNat_eq_coe,  Nat.cast_add, Fsets]--
+  simp_all only [Nat.cast_sum, Fv, Fnv, Fsets]
 
 lemma number_eq_card (F : IdealFamily α) [DecidablePred F.sets] :
   F.number_of_hyperedges = F.toSetFamily.number_of_hyperedges :=

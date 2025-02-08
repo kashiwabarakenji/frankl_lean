@@ -122,6 +122,7 @@ by
     use H ,Hd
     subst hH_eq
     simp_all only [  range0]
+    simp_all only [Finset.mem_filter, Finset.mem_powerset, and_self, and_imp, subset_refl, domain0, i, range0]
 
   have h_val : ∀ s (hs : s ∈ domain0), f s = g (i s hs) := by
     -- here we show: card(s) = (card (s.erase x)) + 1
@@ -129,6 +130,8 @@ by
     have hx_in_s : x ∈ s := by
       simp_all only [Finset.mem_filter, domain0]
     simp_all only [ Finset.card_erase_add_one, i,  g]--
+    simp_all only [Finset.mem_filter, Finset.mem_powerset, and_true, and_self, and_imp, subset_refl, exists_prop,
+      forall_exists_index, domain0, i, g, range0, f]
 
   /- 1) Use sum_bij to get the sum equality *without* rewriting yet -/
   have eq_sum : ∑ s in domain0, f s = ∑ s in range0, g s :=
