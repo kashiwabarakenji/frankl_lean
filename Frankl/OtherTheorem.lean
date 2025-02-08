@@ -1,6 +1,4 @@
 import Mathlib.Data.Finset.Basic
---import Init.Data.Int.Lemmas
---import Init.Data.Nat.Lemmas
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
 import LeanCopilot
@@ -213,6 +211,7 @@ theorem sum_cardinality_eq [Fintype α](FG : Finset α) [DecidableEq FG] (hypere
         exact equal_card
 
     rw [←equal]
+    rw [← @Finset.product_eq_sprod] at h2
     rw [←h2]
 
     apply Finset.sum_congr
@@ -409,7 +408,7 @@ by
     dsimp [isIntersectionClosedFamily] at hclosed
     have hclosed': isIntersectionClosedFamily F' := by
       intros s t hs ht
-      dsimp [SetFamily.sets] at hs ht
+      --dsimp [SetFamily.sets] at hs ht
       cases hs with
       | inl hs =>
         cases ht with
@@ -419,7 +418,7 @@ by
         | inr ht =>
           left
           subst ht
-          simp_all only [Finset.inter_self]
+          --simp_all only [Finset.inter_self]
           have: s ⊆ F.ground := F.inc_ground s hs
           have: s ∩ F.ground = s := by simp_all only [ge_iff_le, not_exists, not_and, not_le, true_or, or_true,
             Finset.inter_eq_left]

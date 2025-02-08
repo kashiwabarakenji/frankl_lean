@@ -16,7 +16,6 @@ structure SetFamily (α : Type) where
   (inc_ground : ∀ s, sets s → s ⊆ ground)
   (nonempty_ground : ground.Nonempty)
 
-
 noncomputable def SetFamily.degree (F : SetFamily α)[DecidablePred F.sets]: α → Int := λ v => Int.ofNat (Finset.filter (λ s => F.sets s ∧ v ∈ s) F.ground.powerset).card  -- degreeを計算する関数を持つとする
 
 noncomputable def SetFamily.number_of_hyperedges  (F : SetFamily α) [DecidablePred F.sets]: Int :=
@@ -38,7 +37,7 @@ structure IdealFamily  (α : Type) [DecidableEq α] [Fintype α] extends SetFami
 
 noncomputable def IdealFamily.degree (F : IdealFamily α)[DecidablePred F.sets]: α → Int := λ v => Int.ofNat (Finset.filter (λ s => F.sets s ∧ v ∈ s) F.ground.powerset).card  -- degreeを計算する関数を持つとする
 
--- A predicate to check if a SetFamily is an IdealFamily
+-- A predicate to check if a SetFamily is an IdealFamily.
 def isIdealFamily (F: SetFamily α) : Prop :=
   (F.sets ∅) ∧                -- The empty set is included
   (F.sets F.ground) ∧         -- The ground set is included

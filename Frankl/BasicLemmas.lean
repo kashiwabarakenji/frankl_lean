@@ -2,8 +2,7 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
---import Mathlib.Init.Data.Nat.Lemmas
-import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import LeanCopilot
 
 variable {α : Type} [DecidableEq α]
@@ -193,6 +192,8 @@ by
 
   simp_all only [ domain]
   simp_all only [Finset.card_union_of_disjoint]
+
+  simp_all only [not_and, rangeQ, domain, rangeP]
 
 lemma filter_union {α : Type} [DecidableEq α] [Fintype α]
   {P Q : Finset α → Prop} [DecidablePred P] [DecidablePred Q]

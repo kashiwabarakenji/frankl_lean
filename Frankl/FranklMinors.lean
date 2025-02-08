@@ -501,6 +501,8 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
     (Finset.filter (fun s => (s = F.ground.erase x) )  (F.ground.erase x).powerset).card +
     (Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset).card := by
       simp_all
+      simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+        or_true, implies_true, Q, P]
 
     have :  (Finset.filter (fun s => (s = F.ground.erase x)) (F.ground.erase x).powerset).card = 1 := by
       simp_all only [Finset.card_eq_one]
@@ -539,6 +541,8 @@ by
   have eqn1: ∀ s, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
     intro s
     simp_all only [and_iff_right_iff_imp, or_true, implies_true, P]
+    simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+      or_true, implies_true, Q, P]
   have eqn1': ∀ s ∈ (F.ground.erase x).powerset, (P s ∧ Q s) ↔ (s = F.ground.erase x) := by
     intro s
     simp_all only [not_false_eq_true,or_true, implies_true, P, Q]
@@ -578,6 +582,8 @@ by
       simp_all
       --simp_all only [Q]
       --congr
+      simp_all only [and_iff_right_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, and_true, not_false_eq_true,
+        or_true, implies_true, Q, P]
 
   have :  (Finset.filter (fun s => (s = F.ground.erase x)) (F.ground.erase x).powerset).sum Finset.card = F.ground.card - 1 := by
     have lem: (F.ground \ {x}).card = F.ground.card - 1 := by
