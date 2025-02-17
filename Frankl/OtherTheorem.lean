@@ -320,7 +320,7 @@ theorem double_count {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α
 set_option linter.unusedVariables false
 lemma normalized_degree_sum_eq_sum_normalized_degree {α : Type} [DecidableEq α] [Fintype α]
   (F : SetFamily α) [DecidablePred F.sets] :
-  F.normalized_degree_sum = ∑ x in F.ground, F.normalized_degree x :=
+  F.normalized_degree_sum = ∑ x ∈ F.ground, F.normalized_degree x :=
 by
   calc
     F.normalized_degree_sum
