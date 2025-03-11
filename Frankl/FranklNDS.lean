@@ -25,7 +25,7 @@ by
   rw [add_comm]
   have left_hand:  (Finset.filter (fun s => F.sets s ∧ v ∉ s) F.ground.powerset).card = (Finset.filter (fun s => (F.toSetFamily.deletion' v vin geq2).sets s) (F.deletion v vin geq2).ground.powerset).card := by
     rw [ground_deletion_ideal F v vin geq2]
-    dsimp [SetFamily.deletion]
+    dsimp [SetFamily.deletion']
     rw [number_ground F.toSetFamily v]
     congr
 
@@ -134,7 +134,7 @@ by
       forall_exists_index, domain0, i, g, range0, f]
 
   /- 1) Use sum_bij to get the sum equality *without* rewriting yet -/
-  have eq_sum : ∑ s in domain0, f s = ∑ s in range0, g s :=
+  have eq_sum : ∑ s ∈ domain0, f s = ∑ s ∈ range0, g s :=
     @Finset.sum_bij _ _ _ _ domain0 range0 f g i (λ s hs => h_mem s hs) (λ s₁ hs₁ s₂ hs₂ h_eq => h_inj s₁ hs₁ s₂ hs₂ h_eq) (λ b hb => h_surj b hb) (λ s hs => h_val s hs)
 
   /- 2) Now rewrite the RHS from ∑ s in range0, (s.card + 1)
@@ -232,20 +232,20 @@ by
 lemma total_have{α : Type} [DecidableEq α] [Fintype α]
   (F : SetFamily α) (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
   [DecidablePred F.sets] (singleton_have :F.sets {x}) :
-  haveI : DecidablePred (F.deletion x hx geq2).sets := by
-    dsimp[SetFamily.deletion]
+  haveI : DecidablePred (F.deletion' x hx geq2).sets := by
+    dsimp[SetFamily.deletion']
     simp_all only [ge_iff_le]
     infer_instance
   haveI : DecidablePred (F.contraction x hx geq2).sets := by
     dsimp [SetFamily.contraction]
     infer_instance
-  F.total_size_of_hyperedges = (F.deletion x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x:=
+  F.total_size_of_hyperedges = (F.deletion' x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x:=
 by
   haveI : DecidablePred (F.contraction x hx geq2).sets := by
     dsimp [SetFamily.contraction]
     infer_instance
-  haveI : DecidablePred (F.deletion x hx geq2).sets := by
-    dsimp [SetFamily.deletion]
+  haveI : DecidablePred (F.deletion' x hx geq2).sets := by
+    dsimp [SetFamily.deletion']
     infer_instance
 
   have sub1 : {F with sets := λ s => F.sets s ∧ x ∈ s, inc_ground := λ s hs => F.inc_ground s (hs.1) }.total_size_of_hyperedges  =
@@ -266,12 +266,12 @@ by
     simp
     congr
 
-  haveI : DecidablePred (F.deletion x hx geq2).sets := by
-    dsimp [SetFamily.deletion]
+  haveI : DecidablePred (F.deletion' x hx geq2).sets := by
+    dsimp [SetFamily.deletion']
     infer_instance
-  have sub4: (Finset.filter (λ s => F.sets s ∧ x  ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))= (F.deletion x hx geq2).total_size_of_hyperedges := by
+  have sub4: (Finset.filter (λ s => F.sets s ∧ x  ∉ s) (Finset.powerset F.ground)).sum (λ s => Int.ofNat (Finset.card s))= (F.deletion' x hx geq2).total_size_of_hyperedges := by
     dsimp [SetFamily.total_size_of_hyperedges]
-    dsimp [SetFamily.deletion]
+    dsimp [SetFamily.deletion']
     simp
     --goal ∑ s ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s) F.ground.powerset, ↑s.card = ∑ x ∈ Finset.filter (fun s => F.sets s ∧ x ∉ s) (F.ground.erase x).powerset, ↑x.card
     let tmp:= filter_sum_eq_int F x
@@ -298,13 +298,13 @@ by
             rw [←sub3]
             simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
       _  = F.degree x +  (F.contraction x hx geq2).total_size_of_hyperedges  +
-          (F.deletion x hx geq2).total_size_of_hyperedges  := by
+          (F.deletion' x hx geq2).total_size_of_hyperedges  := by
             rw [←sub4]
             simp_all only [Int.ofNat_eq_coe, Nat.cast_sum]
-      _  = (F.deletion x hx geq2).total_size_of_hyperedges  +
+      _  = (F.deletion' x hx geq2).total_size_of_hyperedges  +
           (F.contraction x hx geq2).total_size_of_hyperedges  + F.degree x := by
             ring_nf
-      _  = (F.deletion x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x := by
+      _  = (F.deletion' x hx geq2).total_size_of_hyperedges + (F.contraction x hx geq2).total_size_of_hyperedges +  F.degree x := by
             ring_nf
 
   congr

@@ -6,7 +6,7 @@ namespace Frankl
 
 variable {α : Type} [DecidableEq α] [Fintype α]
 
-def SetFamily.deletion (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
+def SetFamily.deletion' (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2): SetFamily α :=
   { ground := F.ground.erase x,
 
     -- In the deletion operation, sets are those that belong to the original family but do not contain x.
@@ -25,8 +25,8 @@ def SetFamily.deletion (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_
 
 instance (F : SetFamily α) [d: DecidablePred F.sets] (x : α)
   (hx : x ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2) :
-  DecidablePred (SetFamily.deletion F x hx ground_ge_two).sets := by
-  dsimp [SetFamily.deletion]
+  DecidablePred (SetFamily.deletion' F x hx ground_ge_two).sets := by
+  dsimp [SetFamily.deletion']
   simp_all only [ge_iff_le]
   infer_instance
 
@@ -341,7 +341,7 @@ lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(groun
   by
    intro s
    dsimp [IdealFamily.deletion]
-   dsimp [SetFamily.deletion]
+   dsimp [SetFamily.deletion']
    simp_all only [ or_iff_left_iff_imp, Finset.mem_erase, ne_eq, not_true_eq_false, false_and, not_false_eq_true, and_true]--
    intro a
    subst a
@@ -359,7 +359,7 @@ lemma ideal_deletion_noneuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(groun
 by
   intro s hns
   dsimp [IdealFamily.deletion]
-  dsimp [SetFamily.deletion]
+  dsimp [SetFamily.deletion']
   apply Iff.intro
   · intro h
     constructor
@@ -385,7 +385,7 @@ lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground)
   (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).number_of_hyperedges :=
   by
     dsimp [IdealFamily.deletion]
-    dsimp [SetFamily.deletion]
+    dsimp [SetFamily.deletion']
     --dsimp [IdealFamily.number_of_hyperedges]
     dsimp [SetFamily.number_of_hyperedges]
     simp_all only [Nat.cast_inj]
@@ -416,7 +416,7 @@ lemma ideal_deletion_haveuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.groun
   (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).total_size_of_hyperedges :=
 by
   dsimp [IdealFamily.deletion]
-  dsimp [SetFamily.deletion]
+  dsimp [SetFamily.deletion']
   --dsimp [IdealFamily.total_size_of_hyperedges]
   dsimp [SetFamily.total_size_of_hyperedges]
   simp_all only [Nat.cast_inj]
@@ -446,7 +446,7 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
   (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).number_of_hyperedges + 1 :=
   by
     dsimp [IdealFamily.deletion]
-    dsimp [SetFamily.deletion]
+    dsimp [SetFamily.deletion']
     --dsimp [IdealFamily.number_of_hyperedges]
     dsimp [SetFamily.number_of_hyperedges]
     --simp_all only [Nat.cast_inj]
@@ -520,7 +520,7 @@ lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x 
   (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
 by
   dsimp [IdealFamily.deletion]
-  dsimp [SetFamily.deletion]
+  dsimp [SetFamily.deletion']
   --dsimp [IdealFamily.total_size_of_hyperedges]
   dsimp [SetFamily.total_size_of_hyperedges]
   --simp_all only [Nat.cast_inj]
@@ -695,9 +695,9 @@ by
 
 omit [Fintype α] in
 lemma ground_deletion_card  (F : SetFamily α) (x : α) (hx: x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2):
-  (SetFamily.deletion F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
+  (SetFamily.deletion' F x hx ground_ge_two).ground.card = Int.ofNat F.ground.card - 1 :=
   by
-    rw [SetFamily.deletion]
+    rw [SetFamily.deletion']
     rw [Finset.card_erase_of_mem hx]
     simp_all only [Int.ofNat_eq_coe]
     rw [Nat.cast_sub]

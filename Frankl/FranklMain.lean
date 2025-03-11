@@ -154,8 +154,7 @@ theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
     exfalso
     have hh := F.nonempty_ground
     have h_empty : F.ground = ∅ := by
-      subst hn
-      simp_all only [Finset.card_eq_zero]
+      simp_all only [Finset.card_eq_zero, Finset.not_nonempty_empty]
     simp_all only [Finset.card_empty, Finset.not_nonempty_empty]
 
   | succ n =>
@@ -187,10 +186,11 @@ theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
       rw [h]
       omega
     -- Consider whether {v} is a hyperedge
-    have ih:  (∀ (F':IdealFamily α) [DecidablePred F'.sets] , F'.ground.card = n → F'.normalized_degree_sum ≤ 0) :=
+    have ih: ∀ (F':IdealFamily α) [inst: DecidablePred F'.sets], F'.ground.card = n → F'.normalized_degree_sum ≤ 0 :=
     by
-      intro hh
-      exact ideal_average_rarity hh
+      intros F' inst hF
+      exact ideal_average_rarity F'
+
 
     rw [groundn] at ih
     have ih' : ∀ (F' : IdealFamily α) [inst : DecidablePred F'.sets],

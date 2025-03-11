@@ -18,7 +18,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
   (F : IdealFamily α)(h : DecidablePred (λ s=> F.sets s)) (v : α)
   (v_in_ground : v ∈ F.ground)
   --(ground_minus_v_none : ¬ (F.sets (F.ground \ {v})))
-  (ground_ge_two : F.ground.card ≥ 2)
+  --(ground_ge_two : F.ground.card ≥ 2)
   (ground_card: F.ground.card = n + 1):
   ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground) (F.ground).powerset, x.card =
   ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground).powerset, x.card + n + 1:=
@@ -40,7 +40,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
       rw [Finset.mem_filter] at hs
       rw [Finset.mem_filter] at hs
       rw [Finset.mem_powerset] at hs
-      simp_all only [ge_iff_le, Nat.reduceLeDiff]
+      --simp_all only [ge_iff_le, Nat.reduceLeDiff]
       obtain ⟨left, right⟩ := hs
       obtain ⟨left, right_1⟩ := left
       obtain ⟨left_1, right⟩ := right
@@ -83,7 +83,7 @@ lemma total_eq_lem_left (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
     (F : IdealFamily α)(h : DecidablePred (λ s=> F.sets s)) (v : α)
     (v_in_ground : v ∈ F.ground)
     (ground_minus_v_none : ¬ (F.sets (F.ground \ {v})))
-    (ground_ge_two : F.ground.card ≥ 2)
+    --(ground_ge_two : F.ground.card ≥ 2)
     (ground_card: F.ground.card = n + 1):
     ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card =
     ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground.erase v).powerset, x.card + n:=
@@ -133,13 +133,13 @@ lemma total_eq_lem (n : Nat) {α : Type} [DecidableEq α] [Fintype α]
   (F : IdealFamily α)(h : DecidablePred (λ s=> F.sets s)) (v : α)
   (v_in_ground : v ∈ F.ground)
   (ground_minus_v_none : ¬ (F.sets (F.ground \ {v})))
-  (ground_ge_two : F.ground.card ≥ 2)
+  --(ground_ge_two : F.ground.card ≥ 2)
   (ground_card: F.ground.card = n + 1):
   ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground) (F.ground).powerset, x.card =
   ∑ x ∈ Finset.filter (fun s => (F.sets s ∧ v ∉ s) ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card + 1:=
   by
-    rw [total_eq_lem_left n F h v v_in_ground ground_ge_two ground_card]
-    rw [total_eq_lem_right n F h v v_in_ground ground_minus_v_none ground_ge_two ground_card]
+    rw [total_eq_lem_left n F h v v_in_ground ground_card]
+    rw [total_eq_lem_right n F h v v_in_ground ground_minus_v_none  ground_card]
 
     have eq_lem: Finset.filter (fun s => F.sets s ∧ v ∉ s) F.ground.powerset = Finset.filter (fun s => F.sets s ∧ v ∉ s) (F.ground.erase v).powerset := by
       ext x
@@ -202,7 +202,7 @@ lemma induction_assum_lem (n : Nat) (F: IdealFamily α) [DecidablePred F.sets] (
 
     linarith
 
-lemma pq_transform (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (ground_ge_two : F.ground.card ≥ 2)(degone: F.degree v = 1):-- (singleton_none : ¬ (F.sets {v})) :
+lemma pq_transform (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_ground : v ∈ F.ground) (degone: F.degree v = 1):-- (singleton_none : ¬ (F.sets {v})) :
   ∀ s ∈ F.ground.powerset, F.sets s ↔ (F.sets s ∧ v ∉ s) ∨ s = F.ground :=
 by
   intro s a
@@ -343,7 +343,7 @@ lemma number_lem (F : IdealFamily α) [DecidablePred F.sets] (v : α) (v_in_grou
 
     have F_hand: F.number_of_hyperedges = (Finset.filter P F.ground.powerset).card + (Finset.filter Q F.ground.powerset).card:= by
       rw [SetFamily.number_of_hyperedges]
-      let result := pq_transform F v v_in_ground geq2 degone
+      let result := pq_transform F v v_in_ground degone
       rw [Finset.filter_congr result]
       let result2 := filter_num F.ground.powerset contradictPQ
       rw [result2]
@@ -478,13 +478,13 @@ by
     have degone: F.degree v = 1 := by
       exact degree_one_if_not_hyperedge F v_in_ground singleton_none
     rw [h_ground_card_n] at h_card
-    let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not geq2 h_card
+    let result:= total_eq_lem (F.ground.card - 1) F (by infer_instance) v v_in_ground h_uv_not h_card
     dsimp [IdealDel]
     dsimp [IdealFamily.deletion]
     dsimp [SetFamily.total_size_of_hyperedges]
     have left_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground) F.ground.powerset, x.card = ↑((Finset.filter F.sets F.ground.powerset).sum Finset.card) :=
     by
-      let tmp:= pq_transform F v v_in_ground geq2 degone
+      let tmp:= pq_transform F v v_in_ground degone
       rw [Finset.filter_congr tmp]
 
     have right_side: ∑ x ∈ Finset.filter (fun s => F.sets s ∧ v ∉ s ∨ s = F.ground.erase v) (F.ground.erase v).powerset, x.card + 1 = ↑((Finset.filter IdealDel.sets (F.ground.erase v).powerset).sum Finset.card) + 1 :=
