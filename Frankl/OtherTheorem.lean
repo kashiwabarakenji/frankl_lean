@@ -219,13 +219,14 @@ theorem sum_cardinality_eq [Fintype α](FG : Finset α) [DecidableEq FG] (hypere
     intro x hx
     exact filter_card_eq_x_card FG hyperedges x hx fground
 
-lemma sum_univ {α : Type} [DecidableEq α] [Fintype α] (f : α → ℕ) : ∑ x : α, f x = ∑ x in Finset.univ, f x := by
+lemma sum_univ {α : Type} [DecidableEq α] [Fintype α] (f : α → ℕ) : ∑ x : α, f x = ∑
+  x ∈ Finset.univ, f x := by
   simp_all only
 
 -- Whether we sum over each vertex or sum the size of hyperedges, the result is the same.
 -- This theorem could potentially be moved to another file.
 theorem double_count {α : Type} [DecidableEq α] [Fintype α] (F : SetFamily α) [DecidablePred F.sets]:
-  F.total_size_of_hyperedges = ∑ x in F.ground, F.degree x := by
+  F.total_size_of_hyperedges = ∑ x ∈ F.ground, F.degree x := by
   rw [SetFamily.total_size_of_hyperedges]
   dsimp [SetFamily.degree]
   simp_all
@@ -324,27 +325,27 @@ lemma normalized_degree_sum_eq_sum_normalized_degree {α : Type} [DecidableEq α
 by
   calc
     F.normalized_degree_sum
-    = ((∑ x in F.ground, F.degree x)) * 2 - (F.number_of_hyperedges * F.ground.card) := by
+    = ((∑ x ∈ F.ground, F.degree x)) * 2 - (F.number_of_hyperedges * F.ground.card) := by
       dsimp [SetFamily.normalized_degree_sum]
       have h2 := double_count F
       rw [h2]
       simp
       ring
-    _ = ((∑ x in F.ground, 2*(F.degree x)) : ℤ) - (F.ground.card * F.number_of_hyperedges : ℤ) := by
+    _ = ((∑ x ∈ F.ground, 2 * (F.degree x)) : ℤ) - (F.ground.card * F.number_of_hyperedges : ℤ) := by
       ring_nf
       symm
       ring_nf
       simp_all only [add_right_inj]
       rw [Finset.sum_mul]
-    _ = (∑ x in F.ground, (2*(F.degree x)) : Int) - ((∑ x in F.ground, 1) * (F.number_of_hyperedges : Int)) := by
+    _ = (∑ x ∈ F.ground, (2 * (F.degree x)) : Int) - ((∑ x ∈ F.ground, 1) * (F.number_of_hyperedges : Int)) := by
       simp_all only [Finset.sum_const, nsmul_eq_mul, mul_one]
-    _ = (∑ x in F.ground, (2*(F.degree x)) : Int) - (∑ x in F.ground, (F.number_of_hyperedges): Int) := by
+    _ = (∑ x ∈ F.ground, (2 * (F.degree x)) : Int) - (∑ x ∈ F.ground, (F.number_of_hyperedges): Int) := by
       simp_all only [Finset.sum_const]
       simp_all only [nsmul_eq_mul, mul_one]
-    _ = ∑ x in F.ground, ((2*(F.degree x) : Int) - (F.number_of_hyperedges) : Int) := by
+    _ = ∑ x ∈ F.ground, ((2 * (F.degree x) : Int) - (F.number_of_hyperedges) : Int) := by
       simp_all only [Int.cast_sum, Int.cast_mul, Int.cast_ofNat, Pi.intCast_def, Int.cast_id, Finset.sum_const,
         nsmul_eq_mul, Int.cast_natCast, Pi.natCast_def, Finset.sum_sub_distrib, Int.cast_sub]
-    _ = ∑ x in F.ground, F.normalized_degree x := by
+    _ = ∑ x ∈ F.ground, F.normalized_degree x := by
       simp only [SetFamily.normalized_degree]
 set_option linter.unusedVariables true
 -- If the average normalized degree is rare (i.e., non-positive), then there is at least one vertex that is rare.
