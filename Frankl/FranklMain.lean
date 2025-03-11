@@ -83,7 +83,7 @@ by
   rfl)
   rw [nds_eq_card F]
   rw [nds_set_minors F v hx geq2 hs]
-  have ih_del : (F.toSetFamily.deletion v hx geq2).normalized_degree_sum <= 0:= by
+  have ih_del : (F.toSetFamily.deletion' v hx geq2).normalized_degree_sum <= 0:= by
     let tmp := nds_deletion_haveuv F v hx geq2 h_uv_have
     rw [←tmp]
     exact ih (F.deletion v hx geq2) (by
@@ -110,9 +110,9 @@ lemma case_hs_noneUV
   rfl)
   rw [nds_eq_card F]
   rw [nds_set_minors F v hx geq2 hs]
-  have ih_del : (F.toSetFamily.deletion v hx geq2).normalized_degree_sum ≤ 0:= by
+  have ih_del : (F.toSetFamily.deletion' v hx geq2).normalized_degree_sum ≤ 0:= by
     let tmp := nds_deletion_noneuv F v hx geq2 h_uv_not
-    have :(F.deletion v hx geq2).normalized_degree_sum - Int.ofNat F.ground.card + 1 = (F.toSetFamily.deletion v hx geq2).normalized_degree_sum := by
+    have :(F.deletion v hx geq2).normalized_degree_sum - Int.ofNat F.ground.card + 1 = (F.toSetFamily.deletion' v hx geq2).normalized_degree_sum := by
       rw [Int.ofNat_eq_coe]
       ring_nf
       ring_nf at tmp
@@ -143,7 +143,7 @@ lemma case_hs_noneUV
   linarith
 
 --Main theorem:
-theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets] (hn :  F.ground.card = n) :
+theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets] :
   F.normalized_degree_sum ≤ 0 := by
   -- Induction on the size of the ground set
   cases h:F.ground.card with

@@ -1,4 +1,5 @@
 import Lake
+--import Lake.Config.Glob
 open Lake DSL
 
 package «Frankl» where
@@ -14,9 +15,11 @@ package «Frankl» where
 lean_lib «Frankl» where
  -- add library configuration options here
   srcDir := "."
-  roots := #[`Frankl.FranklMain] --ここを指定するとうまくoleanファイルが出来てくれない。lake buildでbuildできないのでVS Codeでひとつずつコンパイル。
+  --globs := #[Glob]
+  precompileModules := true
+  --roots := #[`Frankl.FranklMain, `Frankl.FranklRare] --ここを指定するとうまくoleanファイルが出来てくれない。lake buildでbuildできないのでVS Codeでひとつずつコンパイル。
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git"  @  "v4.16.0" -- "v4.15.0-rc1" --"v4.11.0" -- "v4.8.0"
+  "https://github.com/leanprover-community/mathlib4.git"  @  "v4.17.0" -- "v4.15.0-rc1" --"v4.11.0" -- "v4.8.0"
 require LeanCopilot from git
-  "https://github.com/lean-dojo/LeanCopilot.git" @ "v4.16.0" --"main" --
+  "https://github.com/lean-dojo/LeanCopilot.git" @ "v4.17.0" --"main" --

@@ -29,7 +29,7 @@ After completing the initial proof, I wrote a corresponding paper and refactored
 The proof of the current theorem in Lean is stored in the `Frankl` folder of this repository. The main result is stated at the end of `FranklMain.lean`:
 
 ```lean
-theorem ideal_average_rarity {n : Nat}(F : IdealFamily α)[DecidablePred F.sets] (hn :  F.ground.card = n) :
+theorem ideal_average_rarity (F : IdealFamily α)[DecidablePred F.sets]  :
   F.normalized_degree_sum ≤ 0
 ```
 
@@ -84,16 +84,16 @@ When \(\{v\}\) itself is a hyperedge, the contraction includes the empty set, en
 For a set family, the deletion with respect to a vertex \( v \) is defined as the set family obtained by collecting all hyperedges that do not contain \( v \). However, after deletion, the resulting set family may no longer include the ground set, as \( \text{ground} \setminus \{v\} \) might not be a hyperedge. To ensure that the result is still an ideal family, we add \( \text{ground} \setminus \{v\} \) as a hyperedge if it is missing.  
 In the case of an ideal Ffamily, deletion differs from the general deletion operation on set families in that the ground set is explicitly preserved after the operation.
 
-The following is the relation between deletion to set family and deletion as an ideal family when the family does not have \( \text{ground} \setminus \{v\} \). \( \text{F.deletion} \) represents the deletion as an ideal family and \( \text{F.toSetFamily.deletion} \) represents the usual deletion for a set family.
+The following is the relation between deletion to set family and deletion as an ideal family when the family does not have \( \text{ground} \setminus \{v\} \). \( \text{F.deletion} \) represents the deletion as an ideal family and \( \text{F.toSetFamily.deletion'} \) represents the usual deletion for a set family.
 
 ```lean
 lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : α)(hx:x ∈ F.ground)(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges + 1 :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).number_of_hyperedges + 1 :=
 
 lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
 ```
 
 ### **Trace**
@@ -140,8 +140,8 @@ When \(\{v\}\) is a hyperedge, the calculation of the number of hyperedges is ap
 
 ```lean
 lemma number_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F.ground.card ≥ 2) (vin: v ∈ F.ground)(hs: F.sets {v})
-  [DecidablePred (F.toSetFamily.deletion v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
-F.number_of_hyperedges = (F.toSetFamily.deletion v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
+  [DecidablePred (F.toSetFamily.deletion' v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
+F.number_of_hyperedges = (F.toSetFamily.deletion' v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
 ```
 
 ### Lemma about total sum of hyperedge size
@@ -161,7 +161,7 @@ the relation of normalized degree sum to those of minors.
 theorem nds_set_minors (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
  (hs : F.sets {x}):
   F.toSetFamily.normalized_degree_sum =
-  (F.toSetFamily.deletion x hx geq2).normalized_degree_sum +
+  (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum +
   (F.toSetFamily.contraction x hx geq2).normalized_degree_sum
   +2*(F.degree x) - F.number_of_hyperedges :=
 ```
@@ -173,7 +173,7 @@ the relation of normalized degree sum between deletion for set family and the de
 ```lean
 lemma nds_deletion_noneuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
   [DecidablePred F.sets](hx_hyperedge : ¬F.sets (F.ground \ {x})) :
-  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
 ```
 
 ## Case when {v} is not a hyperedge

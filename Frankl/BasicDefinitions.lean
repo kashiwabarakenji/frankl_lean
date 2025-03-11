@@ -19,7 +19,7 @@ structure SetFamily (α : Type) where
 noncomputable def SetFamily.degree (F : SetFamily α)[DecidablePred F.sets]: α → Int := λ v => Int.ofNat (Finset.filter (λ s => F.sets s ∧ v ∈ s) F.ground.powerset).card  -- degreeを計算する関数を持つとする
 
 noncomputable def SetFamily.number_of_hyperedges  (F : SetFamily α) [DecidablePred F.sets]: Int :=
-  Int.ofNat (Finset.card (Finset.filter (λ s => F.sets s ) (F.ground.powerset)))
+  Int.ofNat ((Finset.powerset F.ground).filter F.sets).card
 
 noncomputable def SetFamily.total_size_of_hyperedges (F : SetFamily α)  [DecidablePred F.sets] : Int :=
    Int.ofNat (((Finset.powerset F.ground).filter F.sets).sum Finset.card)

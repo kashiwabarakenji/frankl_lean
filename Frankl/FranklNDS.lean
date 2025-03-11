@@ -17,13 +17,13 @@ namespace Frankl
 variable {α : Type} [DecidableEq α][Fintype α]
 
 lemma number_have (F: IdealFamily α) [DecidablePred F.sets] (v:α) (geq2: F.ground.card ≥ 2) (vin: v ∈ F.ground)(hs: F.sets {v})
-  [DecidablePred (F.toSetFamily.deletion v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
-F.number_of_hyperedges = (F.toSetFamily.deletion v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
+  [DecidablePred (F.toSetFamily.deletion' v vin geq2).sets] [DecidablePred (F.contraction v hs geq2).sets]:
+F.number_of_hyperedges = (F.toSetFamily.deletion' v vin geq2).number_of_hyperedges + (F.contraction v hs geq2).number_of_hyperedges :=
 by
   dsimp [SetFamily.number_of_hyperedges]
   rw [family_union_card F.toSetFamily v]
   rw [add_comm]
-  have left_hand:  (Finset.filter (fun s => F.sets s ∧ v ∉ s) F.ground.powerset).card = (Finset.filter (fun s => (F.toSetFamily.deletion v vin geq2).sets s) (F.deletion v vin geq2).ground.powerset).card := by
+  have left_hand:  (Finset.filter (fun s => F.sets s ∧ v ∉ s) F.ground.powerset).card = (Finset.filter (fun s => (F.toSetFamily.deletion' v vin geq2).sets s) (F.deletion v vin geq2).ground.powerset).card := by
     rw [ground_deletion_ideal F v vin geq2]
     dsimp [SetFamily.deletion]
     rw [number_ground F.toSetFamily v]
@@ -318,7 +318,7 @@ by
 theorem nds_set_minors (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
  (hs : F.sets {x}):
   F.toSetFamily.normalized_degree_sum =
-  (F.toSetFamily.deletion x hx geq2).normalized_degree_sum +
+  (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum +
   (F.toSetFamily.contraction x hx geq2).normalized_degree_sum
   +2*(F.degree x) - F.number_of_hyperedges :=
 by
@@ -338,9 +338,9 @@ by
   clear total number
   ring_nf
   have eqn_lemma := eqn
-    (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges
+    (F.toSetFamily.deletion' x hx geq2).total_size_of_hyperedges
     (F.toSetFamily.contraction x hx geq2).total_size_of_hyperedges
-    (F.toSetFamily.deletion x hx geq2).number_of_hyperedges
+    (F.toSetFamily.deletion' x hx geq2).number_of_hyperedges
     (F.toSetFamily.contraction x hx geq2).number_of_hyperedges
     (F.degree x)
     (F.ground.card:Int)

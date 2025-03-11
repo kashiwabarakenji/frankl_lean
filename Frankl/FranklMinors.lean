@@ -337,7 +337,7 @@ lemma set_ideal_contraction_total (F : IdealFamily α) (x : α) (hs: F.sets {x})
     dsimp [IdealFamily.contraction]
 
 lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x}))) :
-  ∀ s : Finset α , ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
+  ∀ s : Finset α , ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion' x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
   by
    intro s
    dsimp [IdealFamily.deletion]
@@ -355,7 +355,7 @@ lemma ideal_deletion_haveuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(groun
      simp_all only [not_false_eq_true, and_self]
 
 lemma ideal_deletion_noneuv (F : IdealFamily α) (x : α) (hs: F.sets {x})(ground_ge_two: F.ground.card ≥ 2) :--(h_uv_none : ¬(F.sets (F.ground \ {x}))) :
-  ∀ s : Finset α , s ≠ F.ground \ {x} → ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
+  ∀ s : Finset α , s ≠ F.ground \ {x} → ((F.deletion x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s ↔ (F.toSetFamily.deletion' x (by exact F.toSetFamily.inc_ground {x} hs (by simp)) ground_ge_two).sets s) :=
 by
   intro s hns
   dsimp [IdealFamily.deletion]
@@ -381,8 +381,8 @@ by
 
 
 lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground)(ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).number_of_hyperedges :=
   by
     dsimp [IdealFamily.deletion]
     dsimp [SetFamily.deletion]
@@ -412,8 +412,8 @@ lemma ideal_deletion_haveuv_num (F : IdealFamily α) (x : α)(hx:x ∈ F.ground)
 
 
 lemma ideal_deletion_haveuv_total (F : IdealFamily α) (x : α)(hx:x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2) (h_uv_have : (F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).total_size_of_hyperedges :=
 by
   dsimp [IdealFamily.deletion]
   dsimp [SetFamily.deletion]
@@ -442,8 +442,8 @@ by
 
 
 lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : α)(hx:x ∈ F.ground)(ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).number_of_hyperedges + 1 :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).number_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).number_of_hyperedges + 1 :=
   by
     dsimp [IdealFamily.deletion]
     dsimp [SetFamily.deletion]
@@ -516,8 +516,8 @@ lemma ideal_deletion_noneuv_num (F : IdealFamily α)[DecidablePred F.sets] (x : 
     convert left_hand'
 
 lemma ideal_deletion_noneuv_total (F : IdealFamily α) [DecidablePred F.sets](x : α)(hx:x ∈ F.ground) (ground_ge_two: F.ground.card ≥ 2) (h_uv_none : ¬(F.sets (F.ground \ {x})))
-  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion x hx ground_ge_two).sets]:
-  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
+  [DecidablePred (F.deletion x hx ground_ge_two).sets][DecidablePred (F.toSetFamily.deletion' x hx ground_ge_two).sets]:
+  (F.deletion x hx ground_ge_two).total_size_of_hyperedges = (F.toSetFamily.deletion' x hx ground_ge_two).total_size_of_hyperedges + (F.ground.card - 1) :=
 by
   dsimp [IdealFamily.deletion]
   dsimp [SetFamily.deletion]
@@ -626,18 +626,18 @@ by
 
 lemma nds_deletion_haveuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
   [DecidablePred F.sets](hx_hyperedge : F.sets (F.ground \ {x})) :
-  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum :=
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum :=
 by
   calc
     (F.deletion x hx geq2).normalized_degree_sum
         = 2 * (F.deletion x hx geq2).total_size_of_hyperedges - (F.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.deletion x hx geq2).ground.card := by
           dsimp [SetFamily.normalized_degree_sum]
-      _ = 2 * (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card := by
+      _ = 2 * (F.toSetFamily.deletion' x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion' x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion' x hx geq2).ground.card := by
         rw [ideal_deletion_haveuv_num F x hx geq2 hx_hyperedge]
         rw [ideal_deletion_haveuv_total F x hx geq2 hx_hyperedge]
         simp_all only [sub_right_inj, mul_eq_mul_left_iff, Nat.cast_inj]
         tauto
-      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum := by
+      _ = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum := by
           simp_all only [Int.ofNat_eq_coe]
           rfl
 
@@ -668,28 +668,28 @@ lemma ground_deletion_ideal_card  (F : IdealFamily α) (x : α) (hx: x ∈ F.gro
 
 lemma nds_deletion_noneuv (F : IdealFamily α) [DecidablePred F.sets] (x : α) (hx : x ∈ F.ground) (geq2: F.ground.card ≥ 2)
   [DecidablePred F.sets](hx_hyperedge : ¬F.sets (F.ground \ {x})) :
-  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
+  (F.deletion x hx geq2).normalized_degree_sum = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:=
 by
   calc
     (F.deletion x hx geq2).normalized_degree_sum
         = 2 * (F.deletion x hx geq2).total_size_of_hyperedges - (F.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.deletion x hx geq2).ground.card := by
           dsimp [SetFamily.normalized_degree_sum]
-      _ = 2 * ((F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges + (F.ground.card - 1)) - ((F.toSetFamily.deletion x hx geq2).number_of_hyperedges + 1)* Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card:= by
+      _ = 2 * ((F.toSetFamily.deletion' x hx geq2).total_size_of_hyperedges + (F.ground.card - 1)) - ((F.toSetFamily.deletion' x hx geq2).number_of_hyperedges + 1)* Int.ofNat (F.toSetFamily.deletion' x hx geq2).ground.card:= by
         rw [ideal_deletion_noneuv_num F x hx geq2 hx_hyperedge]
         rw [ideal_deletion_noneuv_total F x hx geq2 hx_hyperedge]
         simp_all only [sub_right_inj, mul_eq_mul_left_iff]--
         apply Or.inl
         rfl
-      _ = 2 * (F.toSetFamily.deletion x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card +  2* (Int.ofNat F.ground.card) - 2 - Int.ofNat (F.toSetFamily.deletion x hx geq2).ground.card:= by
+      _ = 2 * (F.toSetFamily.deletion' x hx geq2).total_size_of_hyperedges - (F.toSetFamily.deletion' x hx geq2).number_of_hyperedges * Int.ofNat (F.toSetFamily.deletion' x hx geq2).ground.card +  2* (Int.ofNat F.ground.card) - 2 - Int.ofNat (F.toSetFamily.deletion' x hx geq2).ground.card:= by
         simp_all only [Int.ofNat_eq_coe]--
         ring_nf
-      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + 2* (Int.ofNat F.ground.card) - 2 - (Int.ofNat F.ground.card - 1) := by
+      _ = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum + 2* (Int.ofNat F.ground.card) - 2 - (Int.ofNat F.ground.card - 1) := by
         --simp_all only [Int.ofNat_eq_coe]
         dsimp [SetFamily.normalized_degree_sum]
         simp [ground_deletion_ideal_card F x hx geq2]
         ring_nf
         exact ground_deletion_ideal_card F x hx geq2
-      _ = (F.toSetFamily.deletion x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:= by
+      _ = (F.toSetFamily.deletion' x hx geq2).normalized_degree_sum + Int.ofNat F.ground.card - 1:= by
         simp_all only [Int.ofNat_eq_coe]
         ring_nf
 
