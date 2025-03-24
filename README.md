@@ -206,7 +206,7 @@ The Lean files are located in the Frankl folder of this repository.
 
 # Lean Environment
 
-The version of Lean used is `leanprover/lean4:v4.16.0`.  
+The version of Lean used is `leanprover/lean4:v4.17.0`.  
 This version was selected because it supports Lean Copilot, which was utilized during the proof development. The `lakefile.lean` is configured to ensure that Lean Copilot is downloaded, and the imports explicitly include Lean Copilot. Be cautious when using this project in environments where Lean Copilot is not supported.
 
 You can clone the repository locally with the following command:
@@ -217,7 +217,7 @@ If you already have Lean installed via elan, you can set up the project as follo
 
 ```bash
 cd frankl_lean
-elan override set leanprover/lean4:v4.16.0
+elan override set leanprover/lean4:v4.17.0
 lake update
 lake build
 ```
