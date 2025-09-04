@@ -1,6 +1,6 @@
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
-import LeanCopilot
+--import LeanCopilot
 
 namespace Frankl
 

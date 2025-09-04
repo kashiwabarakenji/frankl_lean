@@ -3,7 +3,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import LeanCopilot
+--import LeanCopilot
 
 variable {α : Type} [DecidableEq α]
 

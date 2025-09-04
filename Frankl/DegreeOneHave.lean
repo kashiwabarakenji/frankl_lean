@@ -1,7 +1,7 @@
 import Frankl.FranklMinors
 import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
-import LeanCopilot
+--import LeanCopilot
 
 --set_option maxHeartbeats 5000000
 

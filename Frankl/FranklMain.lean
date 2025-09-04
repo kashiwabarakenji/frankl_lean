@@ -10,7 +10,7 @@ import Frankl.BasicLemmas
 import Frankl.DegreeOneHave
 import Frankl.DegreeOneNone
 import Frankl.FranklNDS
-import LeanCopilot
+--import LeanCopilot
 
 namespace Frankl
 

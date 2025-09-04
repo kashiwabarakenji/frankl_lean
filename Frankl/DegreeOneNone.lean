@@ -6,7 +6,7 @@ import Frankl.BasicDefinitions
 import Frankl.BasicLemmas
 import Frankl.FamilyLemma
 import Frankl.DegreeOneHave
-import LeanCopilot
+--import LeanCopilot
 
 namespace Frankl
 
