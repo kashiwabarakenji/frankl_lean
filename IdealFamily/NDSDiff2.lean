@@ -3,7 +3,7 @@ import IdealFamily.TraceGuarded
 import IdealFamily.Contraction
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Finset.Powerset
---import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Tactic.Ring
 import Mathlib.Data.Int.Basic
 
 namespace IdealFamily
@@ -78,10 +78,6 @@ lemma totalSize_split_trace (hne : (F.ground.erase v).Nonempty) :
     = sumZ ((F.toSetFamily).delCarrier v)
       + sumZ ((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v) := by
   classical
-  unfold SetFamily.totalSize
-  --change (∑ s ∈ (F.traceIdeal v hne).toSetFamily.carrier, (s.card : ℤ))
-  --      = sumZ  ((F.toSetFamily).delCarrier v)
-  --        + sumZ ((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v)
   have hTrace : (F.traceIdeal v hne).toSetFamily.carrier = (F.toSetFamily).delCarrier v ∪ (F.toSetFamily).contrCarrier v :=
     trace_carrier_eq_del_union_contr' (F := F) (v := v) hne
   have hRewr : (F.toSetFamily).delCarrier v ∪ (F.toSetFamily).contrCarrier v
@@ -89,10 +85,9 @@ lemma totalSize_split_trace (hne : (F.ground.erase v).Nonempty) :
     exact Eq.symm union_sdiff_self_eq_union--union_del_contr_eq_union_del_contrSdiff (F := F) (v := v)
   have hdis : Disjoint ((F.toSetFamily).delCarrier v) ((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v) := by
    exact disjoint_sdiff-- disjoint_del_contr_sdiff (F := F) (v := v)
-  sorry
-  --cases hTrace
-  --cases hRewr
-  --exact Finset.sum_union (by exact hdis) (f := fun s => (s.card : ℤ))
+  simp only [SetFamily.totalSize, SetFamily.totalSizeNat, sumZ]
+  rw [hTrace, hRewr, Finset.sum_union hdis]
+  simp only [Nat.cast_add, Nat.cast_sum]
 
 /-- Edge count on `trace(F)`: `|del| + |contr| − |contr ∩ del|`. -/
 lemma numEdges_split_trace (hne : (F.ground.erase v).Nonempty) :
@@ -141,33 +136,19 @@ lemma numEdges_split_trace (hne : (F.ground.erase v).Nonempty) :
     have hCast := congrArg (fun k : ℕ => (k : ℤ)) hNat
     have hLe :
         (F.contrCarrier v ∩ F.delCarrier v).card ≤ (F.contrCarrier v).card :=
-      Finset.card_le_card  hsubset
-    have hCastSub :
-        ((F.contrCarrier v).card - (F.contrCarrier v ∩ F.delCarrier v).card : ℤ)
-          = ((F.contrCarrier v).card : ℤ)
-              - ((F.contrCarrier v ∩ F.delCarrier v).card : ℤ) :=
-      by exact rfl
-    exact
-      calc
-        ((F.contrCarrier v \ F.delCarrier v).card : ℤ)
-            = ((F.contrCarrier v).card
-                - (F.contrCarrier v ∩ F.delCarrier v).card :  ℤ) := by sorry
-        _ = ((F.contrCarrier v).card : ℤ)
-              - ((F.contrCarrier v ∩ F.delCarrier v).card : ℤ) := hCastSub
+      Finset.card_le_card hsubset
+    simp only [hCast, Nat.cast_sub hLe]
   calc
     (((F.traceIdeal v hne).toSetFamily.carrier).card : ℤ)
         = (((F.toSetFamily).delCarrier v ∪ ((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v)).card : ℤ) := h1
     _   = ((((F.toSetFamily).delCarrier v).card + ((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v).card) : ℤ) := h2
     _   = (((F.toSetFamily).delCarrier v).card : ℤ) + (((F.toSetFamily).contrCarrier v \ (F.toSetFamily).delCarrier v).card : ℤ) := by
-      have hCard := IdealFamily.SetFamily.card_contr_eq_cardS (F.toSetFamily) v
-      sorry
-  --      have hSum  := IdealFamily.SetFamily.sum_card_contr_eq_sum_cardS_sub_one (F.toSetFamily) v
-  --            + ((((F.toSetFamily).contrCarrier v).card : ℤ) - ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card) := by
-  --               cases h3; rfl
+      exact Nat.cast_add _ _
     _   = (((F.toSetFamily).delCarrier v).card : ℤ)
           + (((F.toSetFamily).contrCarrier v).card : ℤ)
           - ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card := by
-            sorry
+            rw [h3]
+            ring
 
 /-! ############################  Algebraic assembly lemmas  ############################ -/
 
@@ -212,8 +193,12 @@ lemma delta_total_size (hne : (F.ground.erase v).Nonempty) :
   have hDelta0 :
       (F.toSetFamily).totalSize - (F.traceIdeal v hne).toSetFamily.totalSize
         = sumZ Sset - sumZ diff := by
-    simp [Sset, Dset, diff,  hT]
-    sorry--mitukarazu
+    have hTotalF : (F.toSetFamily).totalSize = sumZ Dset + sumZ Sset := by
+      simp only [SetFamily.totalSize, SetFamily.totalSizeNat, sumZ, Dset, Sset]
+      rw [carrier_eq_del_union_S (F := F) (v := v), Finset.sum_union (disjoint_del_S (F := F) (v := v))]
+      simp only [Nat.cast_add, Nat.cast_sum]
+    rw [hTotalF, hT]
+    ring
   have hDiff : sumZ diff = sumZ Cset - sumZ inter := by
     have := congrArg (fun z : ℤ => z - sumZ inter) hsplitC
     have : sumZ Cset - sumZ inter = sumZ diff := by
@@ -267,21 +252,15 @@ lemma edges_combo (hne : (F.ground.erase v).Nonempty) :
         = - ((((F.toSetFamily).delCarrier v).card : ℤ) + (((F.toSetFamily).S v).card : ℤ)) * (n : ℤ)
           + ((((F.toSetFamily).delCarrier v).card : ℤ)
               + ((((F.toSetFamily).contrCarrier v).card : ℤ) - ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card)) * ((n : ℤ) - 1) := by
-              rw [hF]
-              rw [hT]
-              rw [hCard]
-              simp
-              sorry
-
-              --cases hF; cases hT; rfl
+              rw [hF, hT]
+              ring
     _   = - ((((F.toSetFamily).delCarrier v).card : ℤ) + (((F.toSetFamily).S v).card : ℤ)) * (n : ℤ)
           + ((((F.toSetFamily).delCarrier v).card : ℤ)
               + ((((F.toSetFamily).S v).card : ℤ) - ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card)) * ((n : ℤ) - 1) := by
-              simp_all only [Nat.cast_inj, neg_add_rev]
+              rw [hCard]
     _   = - ( (((F.toSetFamily).delCarrier v).card : ℤ) + (((F.toSetFamily).S v).card : ℤ) )
           - ((n : ℤ) - 1) * (((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card : ℤ) := by
-              simp_all only [Nat.cast_inj, neg_add_rev]
-              sorry
+              ring
 omit [DecidablePred F.sets] in
 /-- Cast `|U \ {v}|` to `ℤ` as `(n : ℤ) - 1`. -/
 lemma card_ground_erase_z (hvU : v ∈ F.ground) :
@@ -396,24 +375,23 @@ theorem nds_diff_trace_as_normdeg
         = (2 : ℤ) * ((F.toSetFamily).totalSize - (F.traceIdeal v hne).toSetFamily.totalSize)
           + ( - (F.toSetFamily).numEdges * (n : ℤ)
               + (F.traceIdeal v hne).toSetFamily.numEdges * (((F.ground.erase v).card : ℤ)) ) := by
-            sorry
+            ring
     _   = (2 : ℤ) * ( (((F.toSetFamily).S v).card : ℤ)
                       + (∑ t ∈ ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v), (t.card : ℤ)) )
           + ( - (F.toSetFamily).numEdges * (n : ℤ)
               + (F.traceIdeal v hne).toSetFamily.numEdges * (((F.ground.erase v).card : ℤ)) ) := by
-            simp_all only [neg_mul, neg_add_rev, card_erase_of_mem, one_le_card, SetFamily.nonempty_ground,
-              Nat.cast_sub, Nat.cast_one, sum_sub_distrib, sum_const, Int.nsmul_eq_mul, mul_one]
+            rw [hΔtot]
     _   = (2 : ℤ) * ( (((F.toSetFamily).S v).card : ℤ)
                       + (∑ t ∈ ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v), (t.card : ℤ)) )
           + ( - (F.toSetFamily).numEdges * (n : ℤ)
               + (F.traceIdeal v hne).toSetFamily.numEdges * ((n : ℤ) - 1) ) := by
-            simp_all only [neg_mul, neg_add_rev, card_erase_of_mem, one_le_card, SetFamily.nonempty_ground,
-              Nat.cast_sub, Nat.cast_one, sum_sub_distrib, sum_const, Int.nsmul_eq_mul, mul_one]
+            rw [hGround]
     _   = ( (2 : ℤ) * (((F.toSetFamily).S v).card : ℤ)
             - ( (((F.toSetFamily).delCarrier v).card : ℤ) + (((F.toSetFamily).S v).card : ℤ) ) )
           + ( (2 : ℤ) * (∑ t ∈ ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v), (t.card : ℤ))
               - ((n : ℤ) - 1) * (((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v).card : ℤ) ) := by
-            sorry--uchikiri
+            rw [hEdges]
+            ring
     _   = ( (2 : ℤ) * ((F.toSetFamily).degree v) - (F.toSetFamily).numEdges )
           + ( ∑ t ∈ ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v), ((2 : ℤ) * (t.card : ℤ))
               - ∑ _t ∈ ((F.toSetFamily).contrCarrier v ∩ (F.toSetFamily).delCarrier v), ((n : ℤ) - 1) ) := by

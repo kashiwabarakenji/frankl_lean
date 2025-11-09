@@ -1,0 +1,32 @@
+# lakefile.toml
+# lakefile.toml
+name = "IdealFamily"
+defaultTargets = ["IdealFamily"]
+
+[package]
+name = "IdealFamily"
+version = "0.1.0"
+
+# (必要なときだけ) リンカ引数を維持
+moreLinkArgs = [
+  "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+  "-lctranslate2"
+]
+
+# メインの Lean ライブラリ
+[[lean_lib]]
+name = "IdealFamily"
+srcDir = "."
+
+# 依存関係
+[[require]]
+name = "mathlib"
+git  = "https://github.com/leanprover-community/mathlib4.git"
+rev  = "v4.24.0"
+
+# LeanCopilot は Lean の更新に敏感です。4.24 対応が未了なら一時的に外してください。
+[[require]]
+name = "LeanCopilot"
+git  = "https://github.com/lean-dojo/LeanCopilot.git"
+# 最新追従。ビルド不可ならコメントアウト or 対応コミットに固定
+rev = "v4.24.0"
