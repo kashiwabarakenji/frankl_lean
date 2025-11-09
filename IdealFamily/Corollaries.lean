@@ -19,7 +19,7 @@
 -/
 import IdealFamily.Core
 import IdealFamily.Contraction
-import IdealFamily.NDSDiff2
+import IdealFamily.NDSDiff
 import Mathlib.Tactic.Ring
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Int.Basic
