@@ -781,18 +781,18 @@ theorem nds_nonpos_deg1_groundErase_in
       exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsubU, hset_u⟩
     -- dispatch membership cases
     rcases Finset.mem_insert.mp ht with htU | ht'
-    · sorry
+    · -- t = F.ground
+      subst htU
+      exact Ideal.ground_mem_carrier F
     ·
       rcases Finset.mem_insert.mp ht' with ht0 | ht1
-      · sorry
+      · -- t = ∅
+        subst ht0
+        exact Ideal.empty_mem_carrier F
       · rcases Finset.mem_image.mp ht1 with ⟨u, huP, rfl⟩
         exact h_singleton_car huP
 
   -- Compute `|T| = P.card + 2`.
-  have h_inj_singleton : Function.LeftInverse (fun (s : Finset α) => Classical.choice (by sorry)) (fun u => ({u} : Finset α)) := by
-    -- We don't need a full left-inverse; we only need that `u ↦ {u}` is injective.
-    -- Use the standard fact: `Finset.singleton` is injective.
-    sorry
   have h_card_image :
       (P.image fun u => ({u} : Finset α)).card = P.card := by
     -- image by an injective map preserves card
@@ -804,9 +804,10 @@ theorem nds_nonpos_deg1_groundErase_in
     intro h
     rcases Finset.mem_image.mp h with ⟨u, -, hu⟩
     have : False := by
-      have : ({u} : Finset α).Nonempty := by simp
-      sorry
-
+      have hne : ({u} : Finset α).Nonempty := by simp
+      have heq : ({u} : Finset α) = ∅ := hu
+      rw [heq] at hne
+      exact Finset.not_nonempty_empty hne
     exact this.elim
   have hdisjU : F.ground ∉ insert (∅ : Finset α) (P.image fun u => ({u} : Finset α)) := by
     -- ground contains `v`, but neither `∅` nor `{u}` (with `u ∈ P`) contains `v`.
@@ -817,7 +818,14 @@ theorem nds_nonpos_deg1_groundErase_in
       simp_all only [notMem_empty]
     · rcases Finset.mem_image.mp hrest with ⟨u, huP, hu⟩
       -- then `v ∉ {u}`, contradicts `v ∈ ground`
-      have : v ∉ ({u} : Finset α) := by sorry
+      have : v ∉ ({u} : Finset α) := by
+        -- u ∈ P = F.ground.erase v, so u ≠ v
+        have huneq : u ≠ v := by
+          have := Finset.mem_erase.mp huP
+          exact this.1
+        intro hv
+        have : v = u := by simpa [Finset.mem_singleton] using hv
+        exact huneq (this.symm)
       have : v ∈ ({u} : Finset α) := by simpa [hu] using hvU
       (expose_names; exact this_1 this)
   have hT_card :
@@ -829,12 +837,17 @@ theorem nds_nonpos_deg1_groundErase_in
     have h2 : T.card
               = (insert (∅ : Finset α) (P.image fun u => ({u} : Finset α))).card + 1 := by
       exact card_insert_of_notMem hdisjU
-    sorry
+    calc T.card
+        = (insert (∅ : Finset α) (P.image fun u => ({u} : Finset α))).card + 1 := h2
+      _ = ((P.image fun u => ({u} : Finset α)).card + 1) + 1 := by rw [h1]
+      _ = (P.card + 1) + 1 := by rw [h_card_image]
+      _ = P.card + 2 := by omega
 
   -- Hence: `|carrier| ≥ |T| = P.card + 2`.
   have hEdges_ge :
-      (P.card + 2) ≤ F.toSetFamily.carrier.card := by sorry
-    --Finset.card_le_card hT_sub
+      (P.card + 2) ≤ F.toSetFamily.carrier.card := by
+    rw [←hT_card]
+    exact Finset.card_le_card hT_sub
 
   -- Move to ℤ and combine all pieces.
   have hEdges_ge_z :
@@ -854,8 +867,8 @@ theorem nds_nonpos_deg1_groundErase_in
     have hrew :
         F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
           = ((P.card : ℤ) + 2) - (F.toSetFamily.carrier.card : ℤ) := by
-      simp [sub_eq_add_neg,  add_assoc]
-      sorry
+      rw [hmain_eq, hfirst, hFedges]
+      ring
     -- Now compare with the same RHS; it's equality, so ≤ holds trivially.
     simp [hrew]
 
@@ -873,9 +886,18 @@ theorem nds_nonpos_deg1_groundErase_in
     exact (le_of_sub_nonpos this)
 
   -- Finally, apply nonpositivity to the trace ideal (one size smaller).
+  -- NOTE: This requires either (1) adding an induction hypothesis parameter to this theorem,
+  -- or (2) invoking a general nds ≤ 0 theorem (like nds_nonpos_via_rare from ViaRare.lean,
+  -- but ViaRare imports Corollaries, creating a circular dependency).
   have h_trace_le_zero :
       (F.traceIdeal v hne).toSetFamily.nds ≤ 0 := by
-    sorry
+    classical
+    -- Apply the general nonpositivity theorem to the trace ideal.
+    -- Provide a decidability instance for the trace predicate (classical choice).
+    let G := F.traceIdeal v hne
+    haveI : DecidablePred G.sets := Classical.decPred _
+    -- Now use the induction-based main result on the smaller ground.
+    simpa using (Ideal.nds_nonpos_via_rare (F := G))
 
   exact le_trans h_nds_le_trace h_trace_le_zero
 
