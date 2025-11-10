@@ -205,6 +205,114 @@ namespace Ideal
 open Finset
 open scoped BigOperators
 
+namespace Ideal
+
+variable {α : Type*} [DecidableEq α]
+variable (F : Ideal α) [DecidablePred F.sets]
+
+/-- `deg(v)=1` かつ `ground.erase v ∈ F` の場合の差分式。 -/
+theorem nds_diff_deg1_groundErase_in
+  (v : α)
+  (hvU   : v ∈ F.ground)
+  (hdeg1 : F.toSetFamily.degreeNat v = 1)
+  (hne   : (F.ground.erase v).Nonempty)
+  (hin   : F.sets (F.ground.erase v)) :
+  F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
+    = F.toSetFamily.normalizedDegreeAt v + ((F.ground.card : ℤ) - 1) := by
+  classical
+  -- 一般恒等式
+  have h := Ideal.nds_diff_trace_as_normdeg (F := F) (v := v) hvU hne
+  -- `deg=1` なら `S v = {ground}`，よって contrCarrier v = {ground.erase v}
+  have hS_card1 : (F.toSetFamily.S v).card = 1 := by simpa [IdealFamily.SetFamily.degreeNat] using hdeg1
+  have hS_singleton : F.toSetFamily.S v = {F.ground} := by
+    -- Corollaries の同様の議論と同じ
+    -- ground ∈ S v かつ |S v| = 1 → S v = {ground}
+    refine eq_singleton_iff_unique_mem.mpr ?_
+    constructor
+    · sorry
+    · intro x hx
+      sorry
+  have hContr :
+      F.toSetFamily.contrCarrier v = {F.ground.erase v} := by
+    unfold IdealFamily.SetFamily.contrCarrier
+    simp [hS_singleton, Finset.image_singleton]
+  -- `erase v` が carrier にいて、しかも `v ∉ erase v` なので交差はその一点だけ
+  have hInter :
+      (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v)
+        = {F.ground.erase v} := by
+    apply Finset.ext
+    intro t
+    constructor
+    · intro ht
+      rcases Finset.mem_inter.mp ht with ⟨hC, hA⟩
+      have : t = F.ground.erase v := by
+        simpa [hContr] using Finset.mem_singleton.mp
+          (by simpa [hContr] using hC)
+      subst this
+      -- `erase v` は carrier におり、かつ明らかに `v ∉ erase v`
+      have hmem :
+          F.ground.erase v ∈ F.toSetFamily.carrier := by
+        -- hin : F.sets (ground.erase v)
+        have hsub : F.ground.erase v ⊆ F.ground := by
+          intro x hx; exact (Finset.mem_of_subset (by exact Finset.erase_subset _ _) hx)
+        exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsub, hin⟩
+      have : v ∉ F.ground.erase v := Finset.notMem_erase v F.ground
+      -- 以上から `erase v` は delCarrier にも入る
+      have : F.ground.erase v ∈ F.toSetFamily.delCarrier v := by
+        unfold IdealFamily.SetFamily.delCarrier
+        exact Finset.mem_filter.mpr ⟨hmem, by simp⟩
+      simp
+    · intro ht
+      rcases Finset.mem_singleton.mp ht with rfl
+      -- 交差の両側に属することを示す
+      have hmem :
+          F.ground.erase v ∈ F.toSetFamily.carrier := by
+        have hsub : F.ground.erase v ⊆ F.ground := by
+          intro x hx; exact (Finset.mem_of_subset (by exact Finset.erase_subset _ _) hx)
+        exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsub, hin⟩
+      have hdel :
+          F.ground.erase v ∈ F.toSetFamily.delCarrier v := by
+        unfold IdealFamily.SetFamily.delCarrier
+        exact Finset.mem_filter.mpr ⟨hmem, by simp⟩
+      have hcon :
+          F.ground.erase v ∈ F.toSetFamily.contrCarrier v := by
+        simp [hContr] --using Finset.mem_singleton.mpr rfl
+      exact Finset.mem_inter.mpr ⟨hcon, hdel⟩
+  -- 一般恒等式に代入すると和は 1 項だけ：`2|erase v| - (n-1)`。
+  -- ただし `|erase v| = n-1` なのでその項はちょうど `(n-1)`。
+  have hCardErase : ((F.ground.erase v).card : ℤ) = (F.ground.card : ℤ) - 1 := by
+    -- `card_erase_add_one hvU` を整数にキャスト
+    have := Finset.card_erase_add_one (s := F.ground) (a := v) hvU
+    -- (erase).card + 1 = ground.card
+    -- ℤ へ移して整理
+    have : ((F.ground.erase v).card : ℤ) + 1 = (F.ground.card : ℤ) := by
+      omega
+    simp_all only [sum_sub_distrib, sum_const, Int.nsmul_eq_mul, mul_one, card_singleton, inter_eq_left,
+      singleton_subset_iff, card_erase_of_mem, one_le_card, SetFamily.nonempty_ground, Nat.sub_add_cancel,
+      Nat.cast_sub, Nat.cast_one, sub_add_cancel]
+
+  -- 仕上げ
+  calc
+    F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
+        = F.toSetFamily.normalizedDegreeAt v
+          + ∑ t ∈ (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v),
+              ((2 : ℤ) * (t.card : ℤ) - ((F.ground.card : ℤ) - 1)) := by
+            simpa using h
+    _ = F.toSetFamily.normalizedDegreeAt v
+          + ((2 : ℤ) * ((F.ground.erase v).card : ℤ) - ((F.ground.card : ℤ) - 1)) := by
+            simp [hInter]
+    _ = F.toSetFamily.normalizedDegreeAt v + ((F.ground.card : ℤ) - 1) := by
+            -- 2*(n-1) - (n-1) = n-1
+            have : ((F.ground.erase v).card : ℤ) = (F.ground.card : ℤ) - 1 := hCardErase
+            simp [this]  -- `ring` でも可
+            simp_all only [sum_sub_distrib, sum_const, Int.nsmul_eq_mul, mul_one, card_singleton, inter_eq_left,
+              singleton_subset_iff, card_erase_of_mem, one_le_card, SetFamily.nonempty_ground, Nat.cast_sub,
+              Nat.cast_one, singleton_inter_of_mem, sum_singleton, one_mul]
+            simp_all only [erase_nonempty]
+            ring
+
+end Ideal
+
 noncomputable section
 
 variable {α : Type*} [DecidableEq α]

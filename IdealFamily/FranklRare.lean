@@ -96,7 +96,9 @@ theorem ideal_version_of_frankl_conjecture :
     -- ⊆ の定義に展開
     -- (∀ {a}, a ∈ ground → a ∈ M) の否定
     classical
-    sorry
+    simp only [Finset.subset_iff, not_forall] at hNotSubset
+    obtain ⟨x, hxU, hxM⟩ := hNotSubset
+    exact ⟨x, hxU, hxM⟩
 
   rcases hExists with ⟨v, hvU, hvNotM⟩
 
@@ -105,7 +107,7 @@ theorem ideal_version_of_frankl_conjecture :
   let SS : Finset (Finset α) := SF.delCarrier v
 
   -- φ の定義
-  have phi (X : Finset α) : Finset α :=
+  let phi (X : Finset α) : Finset α :=
     if hX : X = F.ground then M else X.erase v
 
   -- φ は S から S̄ へ写る
@@ -121,10 +123,12 @@ theorem ideal_version_of_frankl_conjecture :
       -- M ∈ S̄
       have : M ∈ SF.carrier := hMinC
       have hIn : M ∈ SS := by
-        sorry
+        simp only [SS, SetFamily.delCarrier]
+        exact Finset.mem_filter.mpr ⟨hMinC, hv_not⟩
 
-      simp [ hTop]
-      sorry
+      subst hTop
+      simp only [phi, dif_pos rfl]
+      exact hIn
     · -- φ(X) = X.erase v
       have hX_neU : X ≠ F.ground := hTop
       -- 下方閉性（X ≠ ground）より X.erase v ∈ F
@@ -146,9 +150,11 @@ theorem ideal_version_of_frankl_conjecture :
       have hv_not : v ∉ X.erase v := by simp
       -- よって S̄ に入る
       have : X.erase v ∈ SS := by
-        sorry
+        simp only [SS, SetFamily.delCarrier]
+        exact Finset.mem_filter.mpr ⟨hXerase_inC, hv_not⟩
 
-      sorry
+      simp only [phi, dif_neg hTop]
+      exact this
 
   -- φ の単射（S 上）
   have phi_inj : ∀ {X1} (hX1 : X1 ∈ S) {X2} (hX2 : X2 ∈ S),
@@ -158,21 +164,24 @@ theorem ideal_version_of_frankl_conjecture :
     have hvX2 : v ∈ X2 := (Finset.mem_filter.mp hX2).2
     by_cases h1 : X1 = F.ground
     · have hφ1 : phi  X1 = M := by
-        sorry
+        subst h1
+        simp only [phi, dif_pos rfl]
 
       have hφ2M : phi  X2 = M := by
-        subst hφ1 h1
-        simp_all only [SetFamily.inc_ground, erase_nonempty, mem_erase, ne_eq, and_imp, not_false_eq_true, C, SF, Cp, S,
-          SS]
+        rw [hφ1] at hEq
+        exact hEq.symm
       by_cases h2 : X2 = F.ground
       · simp [h1, h2]
       · -- X2 ≠ ground の場合は矛盾
         have hErase : X2.erase v = M := by
-          sorry
+          have : phi X2 = X2.erase v := by
+            simp only [phi, dif_neg h2]
+          rw [this] at hφ2M
+          exact hφ2M
         -- X2 = insert v (X2.erase v) = insert v M
         have hX2_eq : X2 = insert v (X2.erase v) := by
           subst hErase h1
-          simp_all only [SetFamily.inc_ground, erase_nonempty, mem_erase, ne_eq, not_false_eq_true, true_and,
+          simp_all only [SetFamily.inc_ground, erase_nonempty, mem_erase, ne_eq, not_false_eq_true,
             card_erase_of_mem, and_imp, not_true_eq_false, and_true, insert_erase, C, SF, Cp, S, SS]
         have hX2_eq' : X2 = insert v M := by simpa [hErase] using hX2_eq
         -- X2 は proper（ground ではない）かつ carrier の元
@@ -189,41 +198,52 @@ theorem ideal_version_of_frankl_conjecture :
           simpa using this
         -- 矛盾
         apply (lt_irrefl (M.card)).elim
-        sorry
+        calc M.card < M.card + 1 := Nat.lt_succ_self _
+          _ = X2.card := hCard.symm
+          _ ≤ M.card := hMaxIneq
     · -- X1 ≠ ground
       by_cases h2 : X2 = F.ground
       · -- 対称な矛盾
-        have hφ2 : phi X2 = M := by sorry
+        have hφ2 : phi X2 = M := by
+          subst h2
+          simp only [phi, dif_pos rfl]
         have hφ1M : phi  X1 = M := by
-          subst hφ2 h2
-          simp_all only [SetFamily.inc_ground, erase_nonempty, mem_erase, ne_eq, not_false_eq_true, true_and, and_imp,
-            C, SF, Cp, S, SS]
+          rw [hφ2] at hEq
+          exact hEq
         -- X1 ≠ ground なので X1.erase v = M となり，先ほどと同様に矛盾
-        have hErase : X1.erase v = M := by sorry
+        have hErase : X1.erase v = M := by
+          have : phi X1 = X1.erase v := by
+            simp only [phi, dif_neg h1]
+          rw [this] at hφ1M
+          exact hφ1M
         have hX1_eq : X1 = insert v (X1.erase v) := by
-          subst hφ2 h2
-          simp_all [C, SF, Cp, S, SS]
-          rw [← hErase, insert_erase hvX1]
+          exact (insert_erase hvX1).symm
         have hX1_inC : X1 ∈ C := (Finset.mem_filter.mp hX1).1
         have hX1_inCp : X1 ∈ Cp := by
           exact Finset.mem_erase.mpr ⟨h1, hX1_inC⟩
         have hCard : X1.card = M.card + 1 := by
           have : v ∉ M := hvNotM
-          sorry
+          rw [hX1_eq]
+          simp [hErase]
+          exact card_insert_of_notMem hvNotM
 
         have hMaxIneq : X1.card ≤ M.card := by
           have := hMax X1 hX1_inCp
           simpa using this
-        apply (lt_irrefl (M.card)).elim
-        sorry
+        omega
       · -- どらも ground でない：erase の等しさから復元
         have hEraseEq : X1.erase v = X2.erase v := by
-          sorry
+          have hφ1 : phi X1 = X1.erase v := by
+            simp only [phi, dif_neg h1]
+          have hφ2 : phi X2 = X2.erase v := by
+            simp only [phi, dif_neg h2]
+          rw [hφ1, hφ2] at hEq
+          exact hEq
         have hX1_eq : X1 = insert v (X1.erase v) := by
-          sorry
+          exact (insert_erase hvX1).symm
         have hX2_eq : X2 = insert v (X2.erase v) := by
-          sorry
-        sorry
+          exact (insert_erase hvX2).symm
+        rw [hX1_eq, hX2_eq, hEraseEq]
 
   -- 単射から |S| ≤ |S̄|
   have hCardLe : S.card ≤ SS.card := by
