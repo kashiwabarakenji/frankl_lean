@@ -129,7 +129,7 @@ theorem nds_trace_drop_eq_normalized_degree_deg1
   (hnot  : ¬ F.sets (F.ground.erase v)) :
   (F.toSetFamily).nds - (F.traceIdeal v hne).toSetFamily.nds
     = (F.toSetFamily).normalizedDegreeAt v := by
-  exact Ideal.nds_diff_deg1_groundErase_notin
+  exact nds_diff_deg1_groundErase_notin
           (F := F) (v := v) hvU hdeg1 hne hnot
 
 /-- Corollary (Nonnegativity of NDS from nonnegative normalized degrees).

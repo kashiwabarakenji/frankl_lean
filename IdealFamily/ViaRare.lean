@@ -44,7 +44,7 @@ private lemma erase_nonempty_of_card_succ_succ (n : ℕ)
   have hpos : 0 < (F.ground.erase v).card := by
     simp [hcard] --using Nat.succ_pos n
   exact (card_pos.mp hpos)
-
+/-
 /-! ### |U| = 1 のときの NDS を直接計算して 0 とする補題 -/
 private lemma nds_eq_zero_card_one
   {G : Ideal α} [DecidablePred G.sets]
@@ -93,6 +93,7 @@ private lemma nds_eq_zero_card_one
   -- 具体的に簡約
   simp [hCarrier, hground, this, Finset.card_singleton]  -- 結果は 0
   exact rfl
+-/
 
 /-! ### 論文準拠：レア頂点から NDS ≤ 0 を示す別証明 -/
 
@@ -131,7 +132,7 @@ theorem nds_nonpos_via_rare : F.nds ≤ 0 := by
           have h1 : G.ground.card = 1 := by
             subst hn
             simp_all only [card_eq_zero, Nat.succ_eq_add_one, zero_add]
-          have h0 : G.toSetFamily.nds = 0 := nds_eq_zero_card_one (α := α) (G := G) h1
+          have h0 : G.toSetFamily.nds = 0 := Ideal.nds_eq_zero_card_one (α := α) G h1
           exact le_of_eq h0
         | succ k =>
           -- |U| = k+2 ≥ 2
@@ -139,11 +140,9 @@ theorem nds_nonpos_via_rare : F.nds ≤ 0 := by
           obtain ⟨v, hvU, hRare⟩ := ideal_version_of_frankl_conjecture (F := G)
           -- ケース分け：{v} ∈ F か？
           by_cases hSing : G.sets {v}
-          · /- {v} が超辺のとき： deletion / contraction の合成式で分解し、両マイナーに IH、レアで最後の項 ≤ 0 -/
-            -- deletion' と contraction の定義が存在しないため、この部分は未実装
-            --ここはdeg1ではない。contractionで、idealが閉じている。よって帰納法が使える。
-            -- 既存補題があるかどうか調べる。
-            sorry
+          ·
+            -- deg(v)=1 かつ U\{v} ∈ F の場合は、Corollaries の直接評価補題で即座に結論
+            exact Ideal.nds_nonpos_deg1_haveUV (F := G) (v := v) hvU deg1 hHaveUminus
           · /- {v} が超辺でない：イデアル性から自動的に `deg(v)=1`。さらに `U\\{v}` の有無で分岐 -/
             have hNotSing : ¬ G.sets {v} := hSing
             have deg1 : G.toSetFamily.degreeNat v = 1 := by
