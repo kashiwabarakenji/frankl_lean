@@ -78,6 +78,8 @@ lemma sum_degreeNat_over_ground_eq_totalSizeNat :
           = s.card := by
     intro s hs
     -- use s ⊆ ground
+
+
     have hsub : s ⊆ SF.ground :=
       (SetFamily.mem_carrier_iff (SF := SF)).mp hs |>.1
     -- counting members of s by filtering ground
@@ -326,123 +328,174 @@ variable (F : Ideal α) [DecidablePred F.sets]
 def rare (v : α) : Prop :=
   (F.toSetFamily).normalizedDegreeAt v ≤ 0
 
-/- If NDS(F) ≤ 0 and U≠∅, there exists a rare vertex in U. -/
+
+/-- When `|ground| = 1`, the carrier is exactly `{∅, ground}`. -/
+lemma carrier_eq_pair_card_one
+  (h1 : F.ground.card = 1) :
+  F.toSetFamily.carrier = {∅, F.ground} := by
+  classical
+  -- `ground = {u}`
+  obtain ⟨u, hu⟩ := Finset.card_eq_one.mp h1
+  have hU : F.ground = {u} := hu
+  -- Show both inclusions.
+  apply Finset.Subset.antisymm_iff.mpr
+  constructor
+  · -- `⊆`
+    intro s hs
+    -- From `s ∈ carrier` we get `s ⊆ ground` and `sets s`.
+    have hsub : s ⊆ F.ground :=
+      (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp hs |>.1
+    -- Reduce to `s ⊆ {u}`
+    have hsub' : s ⊆ {u} := by simpa [hU] using hsub
+    -- Two possibilities: `u ∈ s` or not.
+    by_cases huin : u ∈ s
+    · -- Then `{u} ⊆ s` and `s ⊆ {u}` ⇒ `s = {u} = ground`.
+      have : ({u} : Finset α) ⊆ s := by
+        intro x hx;
+        simp_all only [card_singleton, subset_singleton_iff, mem_singleton]
+      have : s = ({u} : Finset α) := Finset.Subset.antisymm hsub' this
+      -- place into `{∅, ground}`
+      have : s = F.ground := by simpa [hU] using this
+      subst this
+      simp
+    · -- If `u ∉ s` and `s ⊆ {u}`, then `s = ∅`.
+      have : s = (∅ : Finset α) := by
+        -- No element can be in `s`.
+        simp_all only [card_singleton, subset_singleton_iff]
+        cases hsub' with
+        | inl h =>
+          subst h
+          simp_all only [notMem_empty, not_false_eq_true]
+        | inr h_1 =>
+          subst h_1
+          simp_all only [mem_singleton, not_true_eq_false]
+
+      subst this
+      simp
+  · -- `⊇`
+    intro s hs
+    rcases Finset.mem_insert.mp hs with h | h
+    · -- s = ground
+      subst h
+      exact empty_mem_carrier F
+    · dsimp [SetFamily.carrier]
+      rw [Finset.mem_filter]
+      rw [Finset.mem_powerset]
+      constructor
+      · simp_all only [card_singleton, mem_insert, mem_singleton, subset_refl]
+      · simp at h
+        rw [h]
+        exact F.has_ground
+
+
+/-- Base case for the induction: if `|U| = 1` then `nds(F) = 0`. -/
+lemma nds_eq_zero_card_one
+  (h1 : F.ground.card = 1) :
+  F.toSetFamily.nds = 0 := by
+  classical
+  -- Identify the carrier.
+  have hcar : F.toSetFamily.carrier = {∅, F.ground} :=
+    carrier_eq_pair_card_one (F := F) h1
+  -- Compute `totalSize` and `numEdges` from the identified carrier.
+  have hTotal :
+      F.toSetFamily.totalSize = (F.ground.card : ℤ) := by
+    -- totalSize = zcast (sum of sizes over carrier)
+    -- For `{∅, ground}`, that's `0 + |ground| = |ground|`.
+    simp [IdealFamily.SetFamily.totalSize, IdealFamily.SetFamily.totalSizeNat, hcar]
+  have hEdges :
+      F.toSetFamily.numEdges = (2 : ℤ) := by
+    classical
+    -- まず NAT 側で card = 2 を出す
+    have hcard2 :
+        (F.toSetFamily.carrier).card = 2 := by
+      -- {∅, ground} = insert ∅ {ground}
+      have : ∅ ≠ F.ground := by
+        -- |ground|=1 なので ∅ とは異なる
+        intro heq
+        have : (∅ : Finset α).card = 1 := by rw [heq]; exact h1
+        simp_all only
+        simp_all only [mem_singleton, insert_eq_of_mem, Nat.cast_one]
+        rw [← heq] at h1
+        simp_all only
+        simp [heq.symm] at h1
+      have hnot : (∅ : Finset α) ∉ ({F.ground} : Finset (Finset α)) := by simp_all only [Nat.cast_one, ne_eq,
+        mem_singleton, not_false_eq_true]
+      have :
+          (({∅, F.ground} : Finset (Finset α))).card
+            = (({F.ground} : Finset (Finset α))).card + 1 := by
+        simpa using (card_insert_of_notMem hnot)
+      -- {ground} の card は 1
+      have : (({∅, F.ground} : Finset (Finset α))).card = 2 := by
+        simp_all only [Nat.cast_one, mem_singleton, not_false_eq_true, card_insert_of_notMem, card_singleton,
+          Nat.reduceAdd]
+      -- carrier=その対集合
+      simpa [hcar] using this
+    -- ℤ へ持ち上げる
+    simp [IdealFamily.SetFamily.numEdges,
+           IdealFamily.SetFamily.numEdgesNat, hcard2]
+
+  have h1z : (F.ground.card : ℤ) = 1 := by exact_mod_cast h1
+  -- NDS(F) = 2*|ground| - 2*|ground|
+  --       = 2*1 - 2*1 = 0.
+  simp [IdealFamily.SetFamily.nds, hTotal, hEdges, h1z]
+
+/-- As a corollary of the base case, `nds(F) ≤ 0` when `|U| = 1`. -/
+lemma nds_nonpos_card_one
+  (h1 : F.ground.card = 1) :
+  F.toSetFamily.nds ≤ 0 := by
+  simp [nds_eq_zero_card_one (F := F) h1]
+
+/-
+If NDS(F) ≤ 0 and U≠∅, there exists a rare vertex in U.
+-/
 theorem exists_rare_of_nds_le_zero
   (hneU : F.ground.Nonempty)
   (hN :  (F.toSetFamily).nds ≤ 0) :
   ∃ v ∈ F.ground, F.rare v := by
   classical
-  -- Use Σ normdeg = nds. If all terms were > 0, the sum would be > 0.
-  -- Hence some term must be ≤ 0.
-  -- Step 1: identify the sum identity.
+  -- Σ_v nd(v) = nds(F)
   have Hsum :
-      ∑ v ∈ F.ground,  (F.toSetFamily).normalizedDegreeAt v =  (F.toSetFamily).nds :=
-    SetFamily.sum_normalizedDegree_over_ground_eq_nds (SF := (F.toSetFamily))
-  -- Suppose by contradiction that all terms are > 0.
-  -- Then by `Int.add_one_le_iff` we get 1 ≤ each term, hence the sum ≥ |U|.
-  -- But |U| > 0, contradicting hN.
-  -- We build the existential directly without classical contradiction.
-  -- If not (∃ v∈U, nd(v) ≤ 0), then ∀ v∈U, 0 < nd(v). Hence 1 ≤ nd(v) for each v.
-  -- Sum ≥ |U| • 1 = |U|, which is > 0 (U nonempty).
-  -- Therefore, there exists v with nd(v) ≤ 0.
+      ∑ v ∈ F.ground, (F.toSetFamily).normalizedDegreeAt v
+        = (F.toSetFamily).nds :=
+    SetFamily.sum_normalizedDegree_over_ground_eq_nds (SF := F.toSetFamily)
+
+  -- 反証法：レア頂点が存在しないと仮定
   by_contra hno
-  -- hno : ¬ ∃ v∈U, nd(v) ≤ 0  ⇒  ∀ v∈U, 0 < nd(v)
-  have hpos_all :
-      ∀ v ∈ F.ground, 0 <  (F.toSetFamily).normalizedDegreeAt v := by
+  -- すると全ての項が正：0 < nd(v)
+  have hpos :
+      ∀ v ∈ F.ground, 0 < (F.toSetFamily).normalizedDegreeAt v := by
     intro v hv
     have : ¬ ( (F.toSetFamily).normalizedDegreeAt v ≤ 0) := by
-      -- from hno
       exact fun hle => hno ⟨v, hv, hle⟩
-    -- total order on ℤ
     exact Int.lt_of_not_ge this
-    -- Provide directly: on ℤ, not (x ≤ 0) ⇒ 0 < x
-    -- Lean lemma: `lt_of_le_of_ne` is not needed; we use trichotomy.
-  -- The previous attempt tried to derive `0 < x` from `¬(x ≤ 0)`.
-  -- On ℤ's linear order: `¬(x ≤ 0)` is equivalent to `0 < x`.
-  -- Let's restate cleanly:
-  clear hpos_all
-  have hpos_all :
-      ∀ v ∈ F.ground, 0 <  (F.toSetFamily).normalizedDegreeAt v := by
-    intro v hv
-    have : ¬ ( (F.toSetFamily).normalizedDegreeAt v ≤ 0) := by exact fun hle => hno ⟨v, hv, hle⟩
-    exact lt_of_le_of_ne (by exact le_of_lt (by exact Int.lt_of_not_ge this)) (by
-    simp_all only [SetFamily.nonempty_ground, not_exists, not_and, not_le, ne_eq]
-    apply Aesop.BuiltinRules.not_intro
-    intro a
-    simp_all only [lt_self_iff_false])
 
-  -- The above is too condensed; instead, we use a standard equivalence:
-  -- On integers, `0 < x ↔ 1 ≤ x` (via `Int.add_one_le_iff`). We'll use that forward.
-  -- We only need `1 ≤ nd(v)` to lower bound the sum.
-  -- So we switch to a simpler derivation:
-
-  clear hpos_all
-  have hone_le :
-      ∀ v ∈ F.ground, (1 : ℤ) ≤  (F.toSetFamily).normalizedDegreeAt v := by
+  -- 整数では 0 < x ↔ 1 ≤ x。よって 1 ≤ nd(v) が各 v で成り立つ
+  have hone :
+      ∀ v ∈ F.ground, (1 : ℤ) ≤ (F.toSetFamily).normalizedDegreeAt v := by
     intro v hv
-    -- `0 < nd(v)` ⇒ `1 ≤ nd(v)` on ℤ by `Int.add_one_le_iff` (rewritten).
-    -- We re-obtain `0 < nd(v)` as explained above from `hno`.
-    have hpos : 0 <  (F.toSetFamily).normalizedDegreeAt v := by
-      have : ¬ ( (F.toSetFamily).normalizedDegreeAt v ≤ 0) := by exact fun hle => hno ⟨v, hv, hle⟩
-      -- linear order: not (x ≤ 0) ⇒ 0 < x
-      exact Int.lt_of_not_ge this
-    -- now 0 < x ⇒ 1 ≤ x
-    have : (1 : ℤ) ≤  (F.toSetFamily).normalizedDegreeAt v := by
-      -- `Int.add_one_le_iff` : a + 1 ≤ b ↔ a < b
-      -- with a=0, b=nd(v) gives 1 ≤ nd(v) ↔ 0 < nd(v)
-      exact hpos
-    -- We already have hpos; rearrange:
-    exact this
-  -- Lower bound the sum by |U| • 1 = |U|.
+    have : 0 < (F.toSetFamily).normalizedDegreeAt v := hpos v hv
+    -- a+1 ≤ b ↔ a < b（a=0）を使って 1 ≤ nd(v)
+    have := (Int.add_one_le_iff.mpr this : 0 + 1 ≤ (F.toSetFamily).normalizedDegreeAt v)
+    simpa [zero_add] using this
+
+  -- 和の下界：Σ 1 ≤ Σ nd(v) ⇒ |U| ≤ Σ nd(v)
   have hsum_ge :
       (F.ground.card : ℤ)
-        ≤ ∑ v ∈ F.ground,  (F.toSetFamily).normalizedDegreeAt v := by
-    -- sum_le_sum-like in the other direction; we prove
-    --   ∀v∈U, 1 ≤ nd(v), hence  Σ 1 ≤ Σ nd(v)
-    -- `sum_const` on ℤ: Σ 1 = card • 1
-    have hsum1 :
-        ∑ _v ∈ F.ground, (1 : ℤ) = F.ground.card • (1 : ℤ) := by
-      exact Finset.sum_const (b := (1 : ℤ)) (s := F.ground)
-    -- convert nsmul-one to card (as ℤ)
-    have hcard :
-        F.ground.card • (1 : ℤ) = (F.ground.card : ℤ) := by
-      exact nsmul_one _
-    -- use sum_le_sum_of_nonneg? We can directly apply monotonicity termwise:
-    have hmono :
-        ∀ v ∈ F.ground, (1 : ℤ) ≤  (F.toSetFamily).normalizedDegreeAt v := by
-      intro v hv; exact hone_le v hv
-    -- conclude
-    calc
-      (F.ground.card : ℤ)
-          = F.ground.card • (1 : ℤ) := by
-           simp_all only [SetFamily.nonempty_ground, not_exists, not_and, implies_true, sum_const, Int.nsmul_eq_mul,
-             mul_one]
-      _   = ∑ _v ∈ F.ground, (1 : ℤ) := by
-           simp_all only [SetFamily.nonempty_ground, not_exists, not_and, implies_true, sum_const, Int.nsmul_eq_mul,
-             mul_one]
-      _   ≤ ∑ v ∈ F.ground,  (F.toSetFamily).normalizedDegreeAt v := by
-            refine Finset.sum_le_sum ?mono
-            intro v hv
-            exact hmono v hv
+        ≤ ∑ v ∈ F.ground, (F.toSetFamily).normalizedDegreeAt v := by
+    have : ∑ _v ∈ F.ground, (1 : ℤ)
+            ≤ ∑ v ∈ F.ground, (F.toSetFamily).normalizedDegreeAt v := by
+      exact Finset.sum_le_sum (by intro v hv; exact hone v hv)
+    -- Σ 1 = card • 1 = card
+    simpa [Finset.sum_const, nsmul_one] using this
 
+  -- まとめ： (card : ℤ) ≤ nds(F) ≤ 0 は |U|>0 に矛盾
+  have le_nds : (F.ground.card : ℤ) ≤ (F.toSetFamily).nds := by
+    simpa [Hsum] using hsum_ge
+  have le_zero : (F.ground.card : ℤ) ≤ 0 := le_trans le_nds hN
+  have pos_card : 0 < (F.ground.card : ℤ) :=
+    Int.natCast_pos.mpr (Finset.card_pos.mpr hneU)
+  exact (lt_irrefl (F.ground.card : ℤ)) (lt_of_le_of_lt le_zero pos_card)
 
-  -- But the RHS equals nds(F); combine with hN ≤ 0 and U≠∅ to force contradiction.
-  have hsum_eq : ∑ v ∈ F.ground,  (F.toSetFamily).normalizedDegreeAt v =  (F.toSetFamily).nds :=
-    SetFamily.sum_normalizedDegree_over_ground_eq_nds (SF := (F.toSetFamily))
-  have hposU : 0 < (F.ground.card : ℤ) := by
-    -- U nonempty ⇒ card > 0 ⇒ cast > 0
-    have : 0 < F.ground.card := Finset.card_pos.mpr hneU
-    -- cast to ℤ
-    exact Int.natCast_pos.mpr this
-
-  -- Combine inequalities: (card : ℤ) ≤ Σ nd = nds ≤ 0, contradicting card>0.
-  -- Hence ∃ rare vertex.
-  have : (F.ground.card : ℤ) ≤  (F.toSetFamily).nds := by
-    simp_all only [SetFamily.nonempty_ground, not_exists, not_and, Int.natCast_pos, card_pos]--
-
-  -- now compare with hN
-  have : (F.ground.card : ℤ) ≤ 0 := le_trans this hN
-  exact absurd (lt_of_le_of_lt this hposU) (lt_irrefl _)
 
 /- ********************  When the intersection block is nonnegative  ******************** -/
 
@@ -600,60 +653,15 @@ theorem nds_nonpos_deg1_groundErase_in
     -- degreeNat v is definitionally `(S v).card`
     simpa using hdeg1
   have hS_singleton : F.toSetFamily.S v = {F.ground} := by
-    -- As in the deg1-wrapper above: ground ∈ S v and uniqueness forces equality.
-    -- (We re-prove it here for self-containment.)
-    -- Show `ground ∈ S v`.
+    -- card(S v) = 1 かつ ground ∈ S v ⇒ S v = {ground}
     have hUmem : F.ground ∈ F.toSetFamily.S v := by
       have hcar : F.ground ∈ F.toSetFamily.carrier := Ideal.ground_mem_carrier F
       exact Finset.mem_filter.mpr ⟨hcar, hvU⟩
-    -- Now use `card_eq_one` to pin the unique element.
     obtain ⟨s0, hs0⟩ := Finset.card_eq_one.mp hS_card1
-    -- `s0` is the unique member of `S v`.
-    have : s0 = F.ground := by
-      -- since `ground ∈ S v`, the unique element must be `ground`
-      have : s0 ∈ F.toSetFamily.S v := by simp [hs0]
-      -- elements of `S v` are exactly those in carrier with `v∈·`
-      -- Uniqueness forces `s0 = ground`.
-      -- Prove by contradiction: if `s0 ≠ ground`, downward-closure of `s0` would give `{v} ∈ F`,
-      -- hence two distinct sets containing `v` (`s0` and `ground`), contradicting `deg=1`.
-      by_cases hEq : s0 = F.ground
-      · exact hEq
-      · -- `s0 ∈ carrier` and `v ∈ s0`
-        have hs0_car : s0 ∈ F.toSetFamily.carrier := (Finset.mem_filter.mp this).1
-        have hv_in : v ∈ s0 := (Finset.mem_filter.mp this).2
-        -- membership gives `F.sets s0`
-        have hsets : F.sets s0 := (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp hs0_car |>.2
-        -- downward-closed below top: if `s0 ≠ ground` and `{v} ⊆ s0`, then `{v} ∈ F`
-        have hsing : F.sets ({v} : Finset α) := by
-          apply F.down_closed hsets hEq
-          exact Finset.singleton_subset_iff.mpr hv_in
-        -- then `S v` contains both `ground` and `{v}`, contradiction to card=1
-        have : 2 ≤ (F.toSetFamily.S v).card := by
-          -- `{v}` and `ground` are distinct and both belong to `S v`
-          have h1 : ({v} : Finset α) ∈ F.toSetFamily.S v := by
-            have hcar :
-              ({v} : Finset α) ∈ F.toSetFamily.carrier := by
-                -- `{v} ⊆ ground` (since v ∈ ground) and `sets {v}`
-                have hsub : ({v} : Finset α) ⊆ F.ground := Finset.singleton_subset_iff.mpr hvU
-                exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsub, hsing⟩
-            exact Finset.mem_filter.mpr ⟨hcar, by simp⟩
-          have h2 : F.ground ∈ F.toSetFamily.S v := hUmem
-          have hneq : ({v} : Finset α) ≠ F.ground := by
-            -- since v ∈ ground and ground.Nonempty with more than singleton would make a contradiction,
-            -- but simpler: if `{v} = ground` then `ground.erase v = ∅`, contradicting `hne`.
-            intro hcontra
-            have : (F.ground.erase v) = (∅ : Finset α) := by simp_all only [erase_nonempty, card_singleton,
-              mem_singleton, not_true_eq_false, P]
-            have : (∅ : Finset α).Nonempty := by simp_all only [Finset.not_nonempty_empty, P]
-            cases this
-            simp_all only [Finset.not_nonempty_empty, P]
-          -- two distinct members ⇒ card ≥ 2
-          simp_all only [erase_nonempty, card_singleton, mem_singleton, not_true_eq_false, P]
-        simp [hS_card1] at this
-      -- discharge impossible branch (already contradicted)
-    -- Finally, rewrite `S v = {s0}` via `hs0` and substitute `s0 = ground`.
-    have hS_eq_s0 : F.toSetFamily.S v = {s0} := by simp [hs0]
-    simpa [this] using hS_eq_s0
+    -- ground ∈ S v = {s0} より ground = s0
+    have : F.ground ∈ ({s0} : Finset (Finset α)) := by simpa [hs0] using hUmem
+    have hgs0 : F.ground = s0 := by simpa [Finset.mem_singleton] using this
+    simp [hs0, hgs0]
 
   -- Step 2: `contrCarrier v = {P}` and hence `(contr ∩ del) = {P}`.
   have h_contr_singleton : F.toSetFamily.contrCarrier v = {P} := by
@@ -676,26 +684,18 @@ theorem nds_nonpos_deg1_groundErase_in
     exact Finset.mem_filter.mpr ⟨hP_car, by simp [hv_notin_P]⟩
   have h_inter_singleton :
       (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v) = {P} := by
-    -- `contr` is `{P}`, and `P ∈ del`, so intersection is exactly `{P}`.
     apply Finset.ext
     intro t
     constructor
     · intro ht
       have htC : t ∈ F.toSetFamily.contrCarrier v := (Finset.mem_inter.mp ht).1
-      have htA : t ∈ F.toSetFamily.delCarrier v := (Finset.mem_inter.mp ht).2
-      -- from `contr = {P}` we get `t = P`
-      have : t = P := by simpa [h_contr_singleton] using Finset.mem_singleton.mp (by
-        -- show t ∈ {P}
-        have : t ∈ (F.toSetFamily.contrCarrier v) := htC
-        simpa [h_contr_singleton] using this)
+      have : t ∈ ({P} : Finset (Finset α)) := by simpa [h_contr_singleton] using htC
+      have : t = P := by simpa [Finset.mem_singleton] using this
       simp [this]
     · intro ht
-      -- t = P
-      have : t = P := Finset.mem_singleton.mp ht
-      -- and P is in both
-      simp [this, h_contr_singleton]
-      subst this
-      simp_all only [erase_nonempty, card_singleton, mem_singleton, P]
+      have htP : t = P := by simpa [Finset.mem_singleton] using ht
+      subst htP
+      exact Finset.mem_inter.mpr ⟨by simp [h_contr_singleton], hP_in_del⟩
 
   -- Step 3: Plug into the exact identity and simplify the (A∩C)-sum.
   have hdiff :=
@@ -759,17 +759,17 @@ theorem nds_nonpos_deg1_groundErase_in
       intro u hu
       -- `{u} ⊆ P` and `F.sets P` with `P ≠ ground` ⇒ `F.sets {u}`
       have hsub : ({u} : Finset α) ⊆ P := by
-        intro x hx;
-        have : x = u := by simpa [Finset.mem_singleton] using hx
-        rw [←this] at hu
-        exact hu
+        intro x hx
+        have hx' : x = u := by simpa [Finset.mem_singleton] using hx
+        simpa [hx'] using hu
 
       have hP_ne_ground : P ≠ F.ground := by
-        -- because `v ∈ ground` but `v ∉ P`
+        intro h
+        have hv_in_P : v ∈ P := by simpa [h] using hvU
         have : v ∉ P := by simp [hPdef]
-        intro hcontra
-        have : v ∈ P := by simpa [hcontra] using hvU
-        (expose_names; exact this_1 this)
+        exact this hv_in_P
+
+
       have hset_u : F.sets ({u} : Finset α) := by
         exact F.down_closed (by simpa [hPdef] using hHave) hP_ne_ground (by
           -- `{u} ⊆ P` proved above
@@ -842,7 +842,8 @@ theorem nds_nonpos_deg1_groundErase_in
         = (insert (∅ : Finset α) (P.image fun u => ({u} : Finset α))).card + 1 := h2
       _ = ((P.image fun u => ({u} : Finset α)).card + 1) + 1 := by rw [h1]
       _ = (P.card + 1) + 1 := by rw [h_card_image]
-      _ = P.card + 2 := by omega
+      _ = P.card + 2 := by simp [Nat.add_assoc]
+
 
   -- Hence: `|carrier| ≥ |T| = P.card + 2`.
   have hEdges_ge :
@@ -892,23 +893,193 @@ theorem nds_nonpos_deg1_groundErase_in
   -- but ViaRare imports Corollaries, creating a circular dependency).
   have h_trace_le_zero :
       (F.traceIdeal v hne).toSetFamily.nds ≤ 0 := by
-    classical
-    -- Apply the general nonpositivity theorem to the trace ideal.
-    -- Provide a decidability instance for the trace predicate (classical choice).
-    let G := F.traceIdeal v hne
-    haveI : DecidablePred G.sets := Classical.decPred _
-    -- Now use the induction-based main result on the smaller ground.
+    -- Proof omitted / admitted: the trace ideal has strictly smaller ground,
+    -- so one can apply the induction hypothesis or the appropriate nonpositivity
+    -- theorem for the smaller ideal; we admit this step here to avoid a
+    -- circular import or an unresolved identifier.
+      -- ★ trace の carrier = P の冪集合
+    have trace_carrier_is_powerset :
+        (F.traceIdeal v hne).toSetFamily.carrier = P.powerset := by
+      classical
+      -- ⊆：trace の carrier の要素は trace の ground ⊆ P に入る
+      apply Finset.Subset.antisymm_iff.mpr
+      constructor
+      · intro s hs
+        have hsSub :
+            s ⊆ (F.traceIdeal v hne).ground :=
+          (IdealFamily.SetFamily.mem_carrier_iff
+            (SF := (F.traceIdeal v hne).toSetFamily)).mp hs |>.1
+        -- ground = P
+        have : (F.traceIdeal v hne).ground = P := by
+          -- traceIdeal の ground は定義で erase v
+          -- （環境にある等式・simp で潰れます）
+          rfl
+        -- s ⊆ P ⇒ s ∈ P.powerset
+        exact (by
+          -- `mem_powerset` で書き換えて終わり
+          have : s ⊆ P := by simpa [this] using hsSub
+          exact (Finset.mem_powerset.mpr this))
+      · -- ⊇：任意の s ⊆ P が trace に入る（delete で取り込まれる）
+        intro s hsPow
+        have hsSub : s ⊆ P := Finset.mem_powerset.mp hsPow
+        -- まず s ∈ F（P ∈ F とイデアルの下方閉性より）
+        have hP_ne_ground : P ≠ F.ground := by
+          -- v ∈ ground かつ v ∉ P なので明らかに異なる
+          intro h; have : v ∉ P := by simp [hPdef]
+          have : v ∈ P := by simpa [h] using hvU
+          (expose_names; exact this_1 this)
+        have h_sets_in_F : F.sets s := by
+          -- A ⊆ B & B ∈ F & B ≠ ground ⇒ A ∈ F
+          exact F.down_closed (by simpa [hPdef] using hHave) hP_ne_ground
+                (by
+                  intro x hx; exact (Finset.mem_of_subset hsSub hx))
+        -- s ⊆ P なので v ∉ s
+        have hvnot : v ∉ s := by
+          have : v ∉ P := by simp [hPdef]
+          exact fun hv => this ((hsSub hv))
+        -- trace の carrier 条件：s ⊆ trace.ground ∧ trace.sets s
+        have hsub_trace : s ⊆ (F.traceIdeal v hne).ground := by
+          simpa [hPdef] using hsSub
+        -- 「delete を取り込む」定義部分で trace.sets s を得る
+        have hsets_trace : (F.traceIdeal v hne).sets s := by
+          -- `traceIdeal` の定義（del ∪ contr）から左側（del）を使う：
+          --   v ∉ s かつ F.sets s ⇒ trace.sets s
+          -- traceSets の左側の条件を使う
+          unfold Ideal.traceIdeal Ideal.traceSets
+          simp
+          left
+          exact ⟨h_sets_in_F, hvnot⟩
+        -- 以上で carrier メンバーシップ
+        exact (IdealFamily.SetFamily.mem_carrier_iff
+                (SF := (F.traceIdeal v hne).toSetFamily)).mpr
+              ⟨hsub_trace, hsets_trace⟩
 
-    simp--a using (Ideal.nds_nonpos_via_rare (F := G))
-    --exact Ideal.nds_nonpos_via_rare (F := G)
-    sorry
+    -- ★ 冪集合の NDS は 0：二分割（u を含む/含まない）で 2*deg = |F|
+    have h_trace_nds_zero :
+        (F.traceIdeal v hne).toSetFamily.nds = 0 := by
+      classical
+      -- 記法
+      set SFt := (F.traceIdeal v hne).toSetFamily
+      have hcar : SFt.carrier = P.powerset := trace_carrier_is_powerset
+      -- 各 u∈P について，包含/非包含で対にして 2*degNat = |carrier|
+      have h_two_deg_eq_card :
+          ∀ u ∈ P, 2 * (SFt.degreeNat u) = SFt.carrier.card := by
+        intro u huP
+        classical
+        -- Rewrite equalities on the powerset side using `hcar : SFt.carrier = P.powerset`.
+        have hcar' : SFt.carrier = P.powerset := hcar
+        -- degreeNat equals the size of the "contains u" filter
+        have hdeg_filter :
+            SFt.degreeNat u
+              = (SFt.carrier.filter (fun s => u ∈ s)).card := by
+          simp [IdealFamily.SetFamily.degreeNat, IdealFamily.SetFamily.S]
+        -- Sum of the two filters equals the whole powerset
+        have hsum_pow :
+            (P.powerset.filter (fun s => u ∈ s)).card
+              + (P.powerset.filter (fun s => u ∉ s)).card
+              = (P.powerset).card := by
+          simpa using
+            (Finset.filter_card_add_filter_neg_card_eq_card
+              (s := P.powerset) (p := fun s => u ∈ s))
+        -- The two filtered parts have the same cardinality via s ↦ erase u / t ↦ insert u t
+        have hswap_pow :
+            (P.powerset.filter (fun s => u ∈ s)).card
+              = (P.powerset.filter (fun s => u ∉ s)).card := by
+          -- bijection between {s ⊆ P | u ∈ s} and {t ⊆ P | u ∉ t}
+          apply Finset.card_bij (i := fun s hs => s.erase u)
+          · intro s hs
+            rcases Finset.mem_filter.mp hs with ⟨hsPow, huins⟩
+            have hsSub : s ⊆ P := Finset.mem_powerset.mp hsPow
+            refine Finset.mem_filter.mpr ?_
+            constructor
+            · -- (s.erase u) ⊆ P
+              exact Finset.mem_powerset.mpr (by
+                intro x hx; exact hsSub (Finset.mem_of_mem_erase hx))
+            · -- u ∉ s.erase u
+              simp
+          · intro s₁ hs₁ s₂ hs₂ h
+            -- both contain u; inserting u after erasing recovers the original
+            have hu1 : u ∈ s₁ := (Finset.mem_filter.mp hs₁).2
+            have hu2 : u ∈ s₂ := (Finset.mem_filter.mp hs₂).2
+            have : insert u (s₁.erase u) = insert u (s₂.erase u) := by
+              rw [h]
+            -- `insert u (erase u s) = s` when `u ∈ s`
+            simpa [Finset.insert_erase hu1, Finset.insert_erase hu2] using this
+          · intro t ht
+            -- take s = insert u t
+            refine ⟨insert u t, ?mem_left, ?image_eq⟩
+            · -- membership in the left filter (contains u)
+              rcases Finset.mem_filter.mp ht with ⟨htPow, hunot⟩
+              have htSub : t ⊆ P := Finset.mem_powerset.mp htPow
+              refine Finset.mem_filter.mpr ?_
+              constructor
+              · -- insert u t ⊆ P
+                exact Finset.mem_powerset.mpr (by
+                  intro x hx
+                  rcases Finset.mem_insert.mp hx with hx | hx
+                  · simpa [hx] using huP
+                  · exact htSub hx)
+              · -- u ∈ insert u t
+                simp
+            · -- f (insert u t) = t
+              -- (insert u t).erase u = t because u ∉ t
+              have hunot : u ∉ t := (Finset.mem_filter.mp ht).2
+              exact Finset.erase_insert hunot
+        -- Conclude: 2 * |{contains u}| = |powerset|
+        have hA_pow :
+            2 * ((P.powerset.filter (fun s => u ∈ s)).card)
+              = (P.powerset).card := by
+          calc
+            2 * ((P.powerset.filter (fun s => u ∈ s)).card)
+                = ((P.powerset.filter (fun s => u ∈ s)).card)
+                  + ((P.powerset.filter (fun s => u ∈ s)).card) := by
+                    simp [two_mul]
+            _   = ((P.powerset.filter (fun s => u ∈ s)).card)
+                  + ((P.powerset.filter (fun s => u ∉ s)).card) := by
+                    rw [hswap_pow]
+            _   = (P.powerset).card := hsum_pow
+        -- Rewrite back from powerset to `SFt.carrier`
+        have hA :
+            2 * ((SFt.carrier.filter (fun s => u ∈ s)).card)
+              = SFt.carrier.card := by
+          simpa [hcar'] using hA_pow
+        -- Finally, substitute degreeNat = |{contains u}|
+        simpa [hdeg_filter] using hA
+      -- INT に上げて各 u の正規化次数が 0 だと分かる
+      have h_each_u_norm0 :
+          ∀ u ∈ P, (2 : ℤ) * (SFt.degree u) - SFt.numEdges = 0 := by
+        intro u huP
+        have hnat := h_two_deg_eq_card u huP
+        -- 2 * degNat = |carrier| を ℤ に
+        have : (2 : ℤ) * (SFt.degree u)
+                = (SFt.carrier.card : ℤ) := by
+          -- degree = zcast degreeNat
+          simpa [SetFamily.degree_eq_zcast_degreeNat] using congrArg (fun k : ℕ => (k : ℤ)) hnat
+        simpa [SetFamily.numEdges_eq_zcast_card] using
+          sub_eq_zero.mpr this
+      -- Σ_u normalizedDegreeAt(u) = Σ_u (2*deg - |F|) = 0 ⇒ nds = 0
+      -- ground = P
+      have h_ground : SFt.ground = P := rfl
+      have hsum :
+          ∑ u ∈ SFt.ground, ((2 : ℤ) * SFt.degree u - SFt.numEdges) = 0 := by
+        -- 各項 0 の和
+        have : ∀ u ∈ SFt.ground, ((2 : ℤ) * SFt.degree u - SFt.numEdges) = 0 := by
+          intro u hu; exact h_each_u_norm0 u (by simpa [h_ground] using hu)
+        -- sum of zeros is zero
+        exact Finset.sum_eq_zero this
+      -- Frankl 恒等式で nds = Σ_u normalizedDegree = 0
+      have H := IdealFamily.SetFamily.sum_normalizedDegree_over_ground_eq_nds (SF := SFt)
+      -- これで nds(trace) = 0
+      --   （`H : Σ = nds` と `hsum : Σ = 0` の合成）
+      calc
+        SFt.nds = ∑ u ∈ SFt.ground, SFt.normalizedDegreeAt u := by exact H.symm
+        _       = ∑ u ∈ SFt.ground, ((2 : ℤ) * SFt.degree u - SFt.numEdges) := by rfl
+        _       = 0 := hsum
+    -- 以上から nds(trace) ≤ 0
+    simp [h_trace_nds_zero]
 
   exact le_trans h_nds_le_trace h_trace_le_zero
 
-/-- If `deg v = 1` and `U \\ {v}` is NOT a hyperedge, then the intersection block vanishes,
-and the trace drop equals exactly the normalized degree.
-
-This is the key identity for the deg=1, no-Uminus case in the recursive proof. -/
 theorem nds_diff_deg1_groundErase_notin
   (v : α)
   (hvU   : v ∈ F.ground)
@@ -918,87 +1089,45 @@ theorem nds_diff_deg1_groundErase_notin
   F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
     = F.toSetFamily.normalizedDegreeAt v := by
   classical
-  -- Use the exact difference identity from NDSDiff
-  have h := Ideal.nds_diff_trace_as_normdeg (F := F) (v := v) hvU hne
-  -- Goal: show the intersection sum is 0 because (contrCarrier v ∩ delCarrier v) = ∅
+  -- 記法
+  set P : Finset α := F.ground.erase v with hPdef
 
-  -- Step 1: deg v = 1 ⇒ S v = {ground}
-  have hS_card1 : (F.toSetFamily.S v).card = 1 := by
-    simpa using hdeg1
-  have hS_singleton : F.toSetFamily.S v = {F.ground} := by
-    have hUmem : F.ground ∈ F.toSetFamily.S v := by
-      have hcar : F.ground ∈ F.toSetFamily.carrier := Ideal.ground_mem_carrier F
-      exact Finset.mem_filter.mpr ⟨hcar, hvU⟩
-    obtain ⟨s0, hs0⟩ := Finset.card_eq_one.mp hS_card1
-    have : s0 = F.ground := by
-      have : s0 ∈ F.toSetFamily.S v := by simp [hs0]
-      by_cases hEq : s0 = F.ground
-      · exact hEq
-      · have hs0_car : s0 ∈ F.toSetFamily.carrier := (Finset.mem_filter.mp this).1
-        have hv_in : v ∈ s0 := (Finset.mem_filter.mp this).2
-        have hsets : F.sets s0 := (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp hs0_car |>.2
-        have hsing : F.sets ({v} : Finset α) := by
-          apply F.down_closed hsets hEq
-          exact Finset.singleton_subset_iff.mpr hv_in
-        have : 2 ≤ (F.toSetFamily.S v).card := by
-          have h1 : ({v} : Finset α) ∈ F.toSetFamily.S v := by
-            have hcar : ({v} : Finset α) ∈ F.toSetFamily.carrier := by
-              have hsub : ({v} : Finset α) ⊆ F.ground := Finset.singleton_subset_iff.mpr hvU
-              exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsub, hsing⟩
-            exact Finset.mem_filter.mpr ⟨hcar, by simp⟩
-          have h2 : F.ground ∈ F.toSetFamily.S v := hUmem
-          have hneq : ({v} : Finset α) ≠ F.ground := by
-            intro hcontra
-            have : (F.ground.erase v) = (∅ : Finset α) := by simp_all only [card_singleton]
-            have : (∅ : Finset α).Nonempty := by simp_all only [Finset.not_nonempty_empty]
-            cases this
-            simp_all only [Finset.not_nonempty_empty]
-          simp_all only [card_singleton]
-        simp [hS_card1] at this
-    have hS_eq_s0 : F.toSetFamily.S v = {s0} := by simp [hs0]
-    simpa [this] using hS_eq_s0
+  -- deg=1 ⇒ S v は単点（しかも ground がその要素）
+  have hS_card1 : (F.toSetFamily.S v).card = 1 := by simpa using hdeg1
+  have hUmem : F.ground ∈ F.toSetFamily.S v :=
+    Finset.mem_filter.mpr ⟨Ideal.ground_mem_carrier F, hvU⟩
+  obtain ⟨s0, hs0⟩ := Finset.card_eq_one.mp hS_card1
+  have hg_eq_s0 : F.ground = s0 := by
+    have : F.ground ∈ ({s0} : Finset (Finset α)) := by simpa [hs0] using hUmem
+    simpa [Finset.mem_singleton] using this
+  have hS_singleton : F.toSetFamily.S v = {F.ground} := by simpa [hg_eq_s0, hs0]
 
-  -- Step 2: contrCarrier v = {ground.erase v}
-  set P := F.ground.erase v
+  -- contrCarrier も単点 {P}
   have h_contr_singleton : F.toSetFamily.contrCarrier v = {P} := by
-    have : F.toSetFamily.contrCarrier v = (F.toSetFamily.S v).image (fun s => s.erase v) := rfl
-    simp [this, hS_singleton]
+    simp [IdealFamily.SetFamily.contrCarrier, hS_singleton, hPdef]
 
-  -- Step 3: P ∉ delCarrier v because ¬ F.sets P
-  have hP_notin_del : P ∉ F.toSetFamily.delCarrier v := by
-    intro h
-    have : F.sets P := (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp ((Finset.mem_filter.mp h).1) |>.2
+  -- 交差 (contr ∩ del) が空：P が delCarrier に入らないことを示せばよい
+  have hP_not_in_del : P ∉ F.toSetFamily.delCarrier v := by
+    -- delCarrier ならば carrier にも入るはずだが，hnot : ¬ F.sets P と矛盾
+    intro hmem
+    have hcar : P ∈ F.toSetFamily.carrier := (Finset.mem_filter.mp hmem).1
+    have : F.sets P :=
+      (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp hcar |>.2
     exact hnot this
 
-  -- Step 4: Therefore (contrCarrier v ∩ delCarrier v) = ∅
-  have h_inter_empty : (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v) = ∅ := by
-    apply Finset.ext
-    intro t
-    constructor
-    · intro ht
-      have htC : t ∈ F.toSetFamily.contrCarrier v := (Finset.mem_inter.mp ht).1
-      have htA : t ∈ F.toSetFamily.delCarrier v := (Finset.mem_inter.mp ht).2
-      have : t = P := by simpa [h_contr_singleton] using Finset.mem_singleton.mp (by
-        have : t ∈ (F.toSetFamily.contrCarrier v) := htC
-        simpa [h_contr_singleton] using this)
-      subst this
-      exact absurd htA hP_notin_del
-    · intro ht
-      exact absurd ht (Finset.notMem_empty t)
+  have h_inter_empty :
+      (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v)
+        = (∅ : Finset (Finset α)) := by
+    apply Finset.eq_empty_iff_forall_not_mem.mpr
+    intro t ht
+    rcases Finset.mem_inter.mp ht with ⟨htC, htD⟩
+    have : t = P := by simpa [h_contr_singleton, Finset.mem_singleton] using htC
+    subst this
+    exact hP_not_in_del htD
 
-  -- Step 5: The sum vanishes
-  have hsum_zero :
-      ∑ t ∈ (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v),
-          ((2 : ℤ) * (t.card : ℤ) - ((F.ground.card : ℤ) - 1)) = 0 := by
-    simp [h_inter_empty]
-
-  -- Step 6: Substitute into the exact identity
-  calc F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
-      = F.toSetFamily.normalizedDegreeAt v
-        + ∑ t ∈ (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v),
-            ((2 : ℤ) * (t.card : ℤ) - ((F.ground.card : ℤ) - 1)) := h
-    _ = F.toSetFamily.normalizedDegreeAt v + 0 := by rw [hsum_zero]
-    _ = F.toSetFamily.normalizedDegreeAt v := by ring
+  -- 正確な差分恒等式から，交差ブロックが空なので和=0
+  have hdiff := Ideal.nds_diff_trace_as_normdeg (F := F) (v := v) hvU hne
+  simpa [h_inter_empty] using hdiff
 
 end
 end Ideal
