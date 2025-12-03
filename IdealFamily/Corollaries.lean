@@ -24,6 +24,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Int.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import LeanCopilot
 
 namespace IdealFamily
 namespace SetFamily
@@ -897,7 +898,10 @@ theorem nds_nonpos_deg1_groundErase_in
     let G := F.traceIdeal v hne
     haveI : DecidablePred G.sets := Classical.decPred _
     -- Now use the induction-based main result on the smaller ground.
-    simpa using (Ideal.nds_nonpos_via_rare (F := G))
+
+    simp--a using (Ideal.nds_nonpos_via_rare (F := G))
+    --exact Ideal.nds_nonpos_via_rare (F := G)
+    sorry
 
   exact le_trans h_nds_le_trace h_trace_le_zero
 
