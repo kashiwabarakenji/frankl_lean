@@ -905,7 +905,100 @@ theorem nds_nonpos_deg1_groundErase_in
 
   exact le_trans h_nds_le_trace h_trace_le_zero
 
+/-- If `deg v = 1` and `U \\ {v}` is NOT a hyperedge, then the intersection block vanishes,
+and the trace drop equals exactly the normalized degree.
 
+This is the key identity for the deg=1, no-Uminus case in the recursive proof. -/
+theorem nds_diff_deg1_groundErase_notin
+  (v : α)
+  (hvU   : v ∈ F.ground)
+  (hdeg1 : F.toSetFamily.degreeNat v = 1)
+  (hne   : (F.ground.erase v).Nonempty)
+  (hnot  : ¬ F.sets (F.ground.erase v)) :
+  F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
+    = F.toSetFamily.normalizedDegreeAt v := by
+  classical
+  -- Use the exact difference identity from NDSDiff
+  have h := Ideal.nds_diff_trace_as_normdeg (F := F) (v := v) hvU hne
+  -- Goal: show the intersection sum is 0 because (contrCarrier v ∩ delCarrier v) = ∅
+
+  -- Step 1: deg v = 1 ⇒ S v = {ground}
+  have hS_card1 : (F.toSetFamily.S v).card = 1 := by
+    simpa using hdeg1
+  have hS_singleton : F.toSetFamily.S v = {F.ground} := by
+    have hUmem : F.ground ∈ F.toSetFamily.S v := by
+      have hcar : F.ground ∈ F.toSetFamily.carrier := Ideal.ground_mem_carrier F
+      exact Finset.mem_filter.mpr ⟨hcar, hvU⟩
+    obtain ⟨s0, hs0⟩ := Finset.card_eq_one.mp hS_card1
+    have : s0 = F.ground := by
+      have : s0 ∈ F.toSetFamily.S v := by simp [hs0]
+      by_cases hEq : s0 = F.ground
+      · exact hEq
+      · have hs0_car : s0 ∈ F.toSetFamily.carrier := (Finset.mem_filter.mp this).1
+        have hv_in : v ∈ s0 := (Finset.mem_filter.mp this).2
+        have hsets : F.sets s0 := (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp hs0_car |>.2
+        have hsing : F.sets ({v} : Finset α) := by
+          apply F.down_closed hsets hEq
+          exact Finset.singleton_subset_iff.mpr hv_in
+        have : 2 ≤ (F.toSetFamily.S v).card := by
+          have h1 : ({v} : Finset α) ∈ F.toSetFamily.S v := by
+            have hcar : ({v} : Finset α) ∈ F.toSetFamily.carrier := by
+              have hsub : ({v} : Finset α) ⊆ F.ground := Finset.singleton_subset_iff.mpr hvU
+              exact (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mpr ⟨hsub, hsing⟩
+            exact Finset.mem_filter.mpr ⟨hcar, by simp⟩
+          have h2 : F.ground ∈ F.toSetFamily.S v := hUmem
+          have hneq : ({v} : Finset α) ≠ F.ground := by
+            intro hcontra
+            have : (F.ground.erase v) = (∅ : Finset α) := by simp_all only [card_singleton]
+            have : (∅ : Finset α).Nonempty := by simp_all only [Finset.not_nonempty_empty]
+            cases this
+            simp_all only [Finset.not_nonempty_empty]
+          simp_all only [card_singleton]
+        simp [hS_card1] at this
+    have hS_eq_s0 : F.toSetFamily.S v = {s0} := by simp [hs0]
+    simpa [this] using hS_eq_s0
+
+  -- Step 2: contrCarrier v = {ground.erase v}
+  set P := F.ground.erase v
+  have h_contr_singleton : F.toSetFamily.contrCarrier v = {P} := by
+    have : F.toSetFamily.contrCarrier v = (F.toSetFamily.S v).image (fun s => s.erase v) := rfl
+    simp [this, hS_singleton]
+
+  -- Step 3: P ∉ delCarrier v because ¬ F.sets P
+  have hP_notin_del : P ∉ F.toSetFamily.delCarrier v := by
+    intro h
+    have : F.sets P := (IdealFamily.SetFamily.mem_carrier_iff (SF := F.toSetFamily)).mp ((Finset.mem_filter.mp h).1) |>.2
+    exact hnot this
+
+  -- Step 4: Therefore (contrCarrier v ∩ delCarrier v) = ∅
+  have h_inter_empty : (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v) = ∅ := by
+    apply Finset.ext
+    intro t
+    constructor
+    · intro ht
+      have htC : t ∈ F.toSetFamily.contrCarrier v := (Finset.mem_inter.mp ht).1
+      have htA : t ∈ F.toSetFamily.delCarrier v := (Finset.mem_inter.mp ht).2
+      have : t = P := by simpa [h_contr_singleton] using Finset.mem_singleton.mp (by
+        have : t ∈ (F.toSetFamily.contrCarrier v) := htC
+        simpa [h_contr_singleton] using this)
+      subst this
+      exact absurd htA hP_notin_del
+    · intro ht
+      exact absurd ht (Finset.notMem_empty t)
+
+  -- Step 5: The sum vanishes
+  have hsum_zero :
+      ∑ t ∈ (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v),
+          ((2 : ℤ) * (t.card : ℤ) - ((F.ground.card : ℤ) - 1)) = 0 := by
+    simp [h_inter_empty]
+
+  -- Step 6: Substitute into the exact identity
+  calc F.toSetFamily.nds - (F.traceIdeal v hne).toSetFamily.nds
+      = F.toSetFamily.normalizedDegreeAt v
+        + ∑ t ∈ (F.toSetFamily.contrCarrier v ∩ F.toSetFamily.delCarrier v),
+            ((2 : ℤ) * (t.card : ℤ) - ((F.ground.card : ℤ) - 1)) := h
+    _ = F.toSetFamily.normalizedDegreeAt v + 0 := by rw [hsum_zero]
+    _ = F.toSetFamily.normalizedDegreeAt v := by ring
 
 end
 end Ideal
